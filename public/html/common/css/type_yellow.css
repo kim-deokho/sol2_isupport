@@ -1,0 +1,12 @@
+/* 색상설정 : 파랑 - #58ACFA / 노랑 - #FACC2E / 주황 - #fa6b58 / 초록 - #92d050 / 보라 - #d38bee */
+.set_color {color: #FACC2E !important; opacity: 1 !important;}
+.set_bg {background-color: #FACC2E !important; opacity: 1 !important;}
+.set_bor {border-color: #FACC2E !important;}
+.set_button {background-color:#FACC2E;color:#000; font-weight:600;}
+
+.header_wrap .top_menu > ul > li > a:hover {color: #FACC2E;opacity: 0.7;}
+.left_nav > ul > li:hover {background-color: #FACC2E;opacity: 0.5;}
+.mResultTablePage .pageNum span.on{background-color: #FACC2E;color:#000;}
+/* 색상설정 끝 */
+
+

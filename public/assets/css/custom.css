@@ -1,0 +1,19 @@
+.pos_abs {position: absolute !important;}
+.pos_rel {position: relative !important;}
+.pos_fix {position: fixed !important;}
+
+
+.dis_inb {display:inline-block;}
+.dis_in {display:inline;}
+.dis_bl {display:block;}
+
+/* 권한, 코드등록 */
+#res_main_name {position:absolute;bottom:0;font-weight:700;font-size:1.8rem;letter-spacing:.1rem;color:#04B45F;}
+
+/* 팝업 */
+.popUp {}
+.popUp .popHeader {padding:10px;line-height:20px;font-size:14px;font-weight:700;background-color:#f2f2f2;border-bottom:1px solid #ccc;}
+.popUp .popBody {padding:20px;}
+
+/* table drag */
+.tDnD_whileDrag {opacity: .5;background-color:#fff8e5;}
