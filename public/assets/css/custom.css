@@ -2,6 +2,9 @@
 .pos_rel {position: relative !important;}
 .pos_fix {position: fixed !important;}
 
+.no_data {text-align:center;}
+
+
 
 .dis_inb {display:inline-block;}
 .dis_in {display:inline;}
@@ -17,3 +20,4 @@
 
 /* table drag */
 .tDnD_whileDrag {opacity: .5;background-color:#fff8e5;}
+

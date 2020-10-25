@@ -1,6 +1,7 @@
 <?php namespace App\Controllers;
 
 use App\Models\AuthorModel;
+use App\Models\PermainModel;
 
 class Auth extends BaseController
 {
@@ -35,6 +36,14 @@ class Auth extends BaseController
                     return redirect()->to(link_url('/auth/login/'));
                     exit;
                 }
+                $permain_model = new PermainModel();
+                $permain=$permain_model->find($mb['bn_pid']);
+                if($permain['bn_use']!='Y') {
+                    $this->session->setFlashdata('login_fail', '사용자의 권한제한으로 접속이 불가능합니다.');
+                    return redirect()->to(link_url('/auth/login/'));
+                    exit;
+                }
+
                 if(!$this->session->get('menu')) {
                     $resMenu=$this->common_model->getManagerMenu(array('per_id'=>$mb['bn_pid'], 'mn_pid'=>$mb['mn_pid']));
                     if(!$resMenu['first_menu']) {

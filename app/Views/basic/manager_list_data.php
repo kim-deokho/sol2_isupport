@@ -25,7 +25,7 @@
             foreach($exp_work as $w) {
                 if(in_array($w, array_keys($setting['code']['Works']))) array_push($arr_work, $setting['code']['Works'][$w]);
             }
-            echo '<tr ondblclick="popManagerFrm(\''.$row['mn_pid'].'\')">';
+            echo '<tr onclick="popManagerFrm(\''.$row['mn_pid'].'\')">';
             echo '  <td>'.$num--.'</td>';
             echo '  <td>'.$setting['code']['Departments'][$row['mn_department']]['cd_name'].'</td>';
             echo '  <td>'.$setting['code']['Positions'][$row['mn_position']]['cd_name'].'</td>';

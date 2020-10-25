@@ -49,6 +49,7 @@ include_once 'popManagerRegForm.php';
 sendSearch();
 function popManagerFrm(pid) {
     var pid = pid || '';
+    document.forms['regFrm'].mn_pid.value=pid;
     if(pid) {
         gcUtil.loader();
         $.ajax({
@@ -75,6 +76,8 @@ function popManagerFrm(pid) {
     else {
         $('#pwd').removeClass('mWt50p');
         $('#chk_pwd').addClass('d_none');
+        $('#regFrm #mn_no').html('');
+        $('#regFrm #reg_date').html('');
         setFormData('regFrm');
         pop_modal('pop_manager_reg');
     }

@@ -70,5 +70,35 @@ class BasicModel extends BaseModel
         // debug($options, $this->dDB->getLastQuery());
         return $rows;
     }
+
+    function getTraderList($options) {
+        // debug($options);
+        $builder = $this->dDB->table('tb_customer');
+        if($options['select']) $builder->select($options['select'], false);
+        if($options['ct_kind']) $builder->where('ct_kind', $options['ct_kind']);
+        if($options['searchWord'] && $options['searchKey']) {
+            if(!is_array($options['searchKey'])) $options['searchKey']=array($options['searchKey']);
+            $keyword=trim($options['searchWord']);
+            $OrWhere=array();
+            foreach($options['searchKey'] as $s_k) array_push($OrWhere, $s_k.' like '.$this->dDB->escape('%'.$keyword.'%'));
+            // debug($options, $OrWhere);
+            // exit;
+            $builder->where('('.implode(' or ', $OrWhere).')', null, false);
+        }
+        if($options['page'] > 0) {
+            $order=$options['order']?$options['order']:'ct_pid';
+            $sort=$options['sort']?$options['sort']:'desc';
+			$builder->orderBy($order, $sort);
+			if($options['rcnt'] > 0) {
+				$snum = ($options['page']-1)*$options['rcnt'];
+				$builder->limit($options['rcnt'], $snum);
+            }
+            $rows = $builder->get()->getResultArray();
+            // debug($options, $this->dDB->getLastQuery());
+            return $rows;
+		} else {
+			return $builder->countAllResults();
+		}    
+    }
     
 }

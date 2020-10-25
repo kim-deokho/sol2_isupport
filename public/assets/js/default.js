@@ -8,7 +8,14 @@ function readyDoc() {
     attachEvt();
 }; // readyDoc 끝
 
+var cateCtr=null;
 function attachEvt() {
+    $('input').on('keyup', function(evt) {
+        if($(this).attr('_enter')) {
+            if(evt.keyCode==13) eval($(this).attr('_enter')+'()');
+        }
+        if($(this).hasClass('input-comma')) new Input_money_by_name($(this).attr('name'));
+    });
 
     // 전체체크/해제
     $('.allCheck').on('click', function(){
@@ -28,7 +35,7 @@ function attachEvt() {
     if(jsConfig.pagePermition) {
         if(jsConfig.pagePermition.access!='Y') {
             $('.container').addClass('d_none');
-            alertBox("접속 권한이 없습니다.", win_back);
+            alertBox("접속 권한이 없습니다.", win_load, 'back');
         }
         if(jsConfig.pagePermition.save!='Y') $('.js-save-btn').addClass('d_none');
         if(jsConfig.pagePermition.del!='Y') $('.js-del-btn').addClass('d_none');
@@ -55,13 +62,16 @@ function attachEvt() {
         $("#"+input_id).val("");
     });
 
-    // 멀티 셀렉트(쿼리에 멀티값이 없을때만 기본셋팅 / 있을때는 setFormQUery에서 셋팅)
+    // 멀티 셀렉트(쿼리에 멀티값이 없을때만 기본셋팅 / 있을때는 setFormQUery에서 셋팅 : 중복셋팅오류방지)
     getQueryStringObject();
     if(!jsConfig.multi_query) $('.multi_select').multipleSelect();
 
 }
-function win_back() {
-    history.back();
+function win_load(type) {
+    var type = type || 'reload';
+    if(type=='reload') top.location.reload();
+    else if(type=='href') top.location.href=top.location.href;
+    else if(type=='back') history.back();
 }
 function setRadio(name, value) {
     $('input:radio[name="'+name+'"][value="'+value+'"]').prop('checked', true);
@@ -107,7 +117,7 @@ function inputNumberAutoComma(obj) {
 
     // 콤마( , )를 제외하고 문자가 입력되었는지를 확인한다.
     if(isFinite(deleteComma) == false) {
-        alertify.message("문자는 입력하실 수 없습니다.");
+        alert("문자는 입력하실 수 없습니다.");
         obj.value = "";
         return false;
     }
@@ -126,6 +136,7 @@ function inputNumberWithComma(str) {
 // 콤마( , )가 들어간 값에 콤마를 제거하는 함수
 function inputNumberRemoveComma(str) {
     str = String(str);
+    str = str.replace(/(^0+)/, "");
     return str.replace(/[^\d]+/g, "");
 }
 
@@ -194,7 +205,7 @@ function summerSendFile(file, el) {
         success: function(res) {
             var resJson=JSON.parse(res);
             if(!resJson.success) {
-                alertify.error(resJson.msg);
+                alert(resJson.msg);
                 return false;
             }
            
@@ -312,6 +323,9 @@ function setFormQuery(pg) {
                 // console.log('exp_val', exp_val, d_k, k);
                 $select.multipleSelect('setSelects', exp_val);
             }
+            else if(tag_name=='SELECT' && $("[name='"+d_k+"']").hasClass('js-single-selector')) {
+                $("[name='"+d_k+"']").select2('val', querys[k]);
+            }
             else $('#'+k).val(querys[k]);
         }
     }
@@ -338,9 +352,24 @@ function setFormData(frm_id, data) {
             }
             else {
                 tagName=$('#'+frm_id+' #'+k).prop('tagName');
+                multiple=$("[name='"+d_k+"']").prop('multiple');
+
                 // console.log('tagNmae', tagName, k, data[k]);
-                if(tagName=='SPAN') $('#'+frm_id+' #'+k).html(data[k]);
-                else $('#'+frm_id+' #'+k).val(data[k]);
+                if(tagName=='SELECT' && multiple) {
+                    // console.log('on', d_k);
+                    $select = $("[name='"+d_k+"']");
+                    $select.multipleSelect();
+                    exp_val=data[k].split(',');
+                    // console.log('exp_val', exp_val, d_k, k);
+                    $select.multipleSelect('setSelects', exp_val);
+                }
+                else if(tagName=='SELECT' && $("[name='"+d_k+"']").hasClass('js-single-selector')) {
+                    $("[name='"+d_k+"']").select2('val', data[k]);
+                }
+                else {
+                    if(tagName=='SPAN') $('#'+frm_id+' #'+k).html(data[k]);
+                    else $('#'+frm_id+' #'+k).val(data[k]);
+                }
             }
         }
     }

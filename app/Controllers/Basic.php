@@ -7,8 +7,10 @@ use App\Models\PermainModel;
 use App\Models\PersubModel;
 use App\Models\PeraddModel;
 use App\Models\CompanyModel;
+use App\Models\TraderModel;
 
 use App\Libraries\Fileuploader;
+use App\Libraries\Fixcodes;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -24,6 +26,7 @@ class Basic extends BaseController
         $this->persub_model = new PersubModel();
         $this->peradd_model = new PeraddModel();
         $this->company_model = new CompanyModel();
+        $this->fix_codes = new Fixcodes();
         
         //부서
         if(!$this->setting['code']['Departments']) $this->setting['code']['Departments']=$this->common_model->getCodeData(array('p_cd_code'=>'0101', 'returnType'=>'pid'));
@@ -181,6 +184,13 @@ class Basic extends BaseController
             $rows=$this->common_model->getCodeData(array('where'=>array('cd_pid'=>$this->Params['cd_pid'])));
             echo json_encode($rows[0]);
         }
+        else if($this->Params['mode']=='get_trader') {  // 선택된 거래처 정보가져오기
+            $trader_model = new TraderModel();
+            $trader=$trader_model->find($this->Params['pid']);
+            // debug($this->Params, $this->manager_model);
+            echo json_encode($trader);
+        }
+        
     }
 
     function execute() {
@@ -370,6 +380,27 @@ class Basic extends BaseController
             }
             exit('ok');
         }
+        if($this->Params['mode']=='reg_trader') {  // 거래처등록
+            $trader_model = new TraderModel();
+            $RegData=$this->Params;
+            $Scripts=array();
+            $isRow=$trader_model->where(array('ct_name'=>$this->Params['ct_name'], 'ct_pid !='=>$this->Params['ct_pid']))->first();
+            if($isRow['ct_pid']) {
+                $Scripts[]='parent.alertBoxFocus("이미 동일한 업체명 존재합니다.", parent.document.forms["regFrm"].ct_name)';
+                jsExecute($Scripts);
+                return;
+            }
+            if(!$this->Params['ct_out_date']) $RegData['ct_out_date']=null;
+            if(!$this->Params['ct_pid']) {
+                $RegData['ct_code']=$this->common_model->makeCtCode();
+                $insert_id=$trader_model->insert($RegData);
+            }
+            else {
+                unset($RegData['ct_pid']);
+                $trader_model->update($this->Params['ct_pid'], $RegData);
+            }
+            jsExecute(array('parent.location.reload()'));
+        }
         
     }
 
@@ -419,6 +450,38 @@ class Basic extends BaseController
         $this->_header();
         echo view('basic/code_manage', $viewParams);
         $this->_footer();
+    }
+
+    function trader_list() {    
+        $viewParams=$this->Params;
+        //매출처
+        $this->setting['code']['OutKind']=$this->common_model->getCodeData(array('p_cd_code'=>'0104', 'returnType'=>'pid'));
+        $viewParams['setting']=$this->setting;
+        $viewParams['fix_codes']=$this->fix_codes;
+       
+        $this->_header();
+        echo view('basic/trader_list', $viewParams);
+        $this->_footer();
+    }
+
+    function trader_list_data() {
+        // debug($this->Params, $_GET, $_POST);
+        $this->Params['rcnt']=$this->paging_rcnt;
+        $viewParams=$this->Params;
+        $rows=$this->basic_model->getTraderList($this->Params);
+        unset($this->Params['page']);
+        $totCnt=$this->basic_model->getTraderList($this->Params);
+        $viewParams['totCnt']=$totCnt;
+        $viewParams['rows']=$rows;
+        $viewParams['num'] = $totCnt - (($viewParams['page']-1)*$viewParams['rcnt']);
+        //매출처
+        $this->setting['code']['OutKind']=$this->common_model->getCodeData(array('p_cd_code'=>'0104', 'returnType'=>'pid'));
+        $viewParams['setting']=$this->setting;
+        $viewParams['fix_codes']=$this->fix_codes;
+
+        $listHtml=view('basic/trader_list_data', $viewParams);
+        echo json_encode(array('totCnt'=>$totCnt, 'rcnt'=>$viewParams['rcnt'], 'page'=>$viewParams['page'], 'html'=>$listHtml));
+
     }
 
 }

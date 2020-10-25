@@ -70,7 +70,7 @@ include_once 'popCodeRegForm.php';
 ?>
 <script>
 $(function(){
-    $('.list_main_code').on('dblclick', function(){
+    $('.list_main_code').on('click', function(){
         setSubCodeList($(this).attr('data-code'), $(this).attr('data-name'));
     })
 });

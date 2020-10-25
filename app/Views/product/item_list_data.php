@@ -17,22 +17,20 @@
 <?
     if($totCnt>0) {
         foreach($rows as $row) {
-            $exp_work=explode(',', $row['mn_work']);
-            $arr_work=array();
-            foreach($exp_work as $w) {
-                if(in_array($w, array_keys($setting['code']['Works']))) array_push($arr_work, $setting['code']['Works'][$w]);
-            }
-            echo '<tr>';
+            $categoryPath = array($categorys[$row['pc_pid1']]['pc_name']);
+            if($row['pc_pid2']) array_push($categoryPath, $categorys[$row['pc_pid2']]['pc_name']);
+            if($row['pc_pid3']) array_push($categoryPath, $categorys[$row['pc_pid3']]['pc_name']);
+            echo '<tr onclick="popProductFrm(\''.$row['pd_pid'].'\')">';
             echo '  <td>'.$num--.'</td>';
-            echo '  <td>'.$row['ct_pid'].'</td>';
-            echo '  <td>'.$row['pc_pid1'].'>'.$row['pc_pid2'].'>'.$row['pc_pid3'].'</td>';
+            echo '  <td>'.$buyPids[$row['ct_pid']].'</td>';
+            echo '  <td>'.implode(' > ', $categoryPath).'</td>';
             echo '  <td>'.$row['pd_code'].'</td>';
             echo '  <td>'.$row['pd_name'].'</td>';
-            echo '  <td>'.$row['pd_kind'].'</td>';
+            echo '  <td>'.$setting['code']['ProductKind'][$row['pd_kind']]['cd_name'].'</td>';
             echo '  <td>'.number_format($row['pd_in_price']).'</td>';
             echo '  <td>'.number_format($row['pd_out_price']).'</td>';
             echo '  <td>'.$row['pd_use'].'</td>';
-            echo '  <td>'.dateFormat($row['reg_date'], 'Y-m-d').'</td>';
+            echo '  <td>'.dateFormat('Y-m-d', $row['reg_date']).'</td>';
             echo '</tr>';
         }
     }

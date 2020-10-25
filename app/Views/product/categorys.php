@@ -13,57 +13,12 @@
                     <div id='jstree_category'></div>
                 </div> <!-- category_wrap -->
             </div> <!-- left_con -->
-
-            <!-- <div class="right_con">
-                <form name='actFrm' method='post'>
-                <input type='hidden' name='mode' value='chg_category_info'>
-                <input type='hidden' name='cate_code'>
-                <input type='hidden' name='cate_depth' id='cate_depth'>
-                <div class="table_wrap">
-                    <table class="itable_1">
-                        <tbody>
-                            <tr>
-                                <th class="mWt150">현재 카테고리</th>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <th>카테고리코드</th>
-                                <td><input type="text" name="" class="mWt200" value="" readonly /></td>
-                            </tr>
-                            <tr>
-                                <th>카테고리명</th>
-                                <td><input type="text" name="" class="mWt200" value="" /></td>
-                            </tr>
-                            <tr>
-                                <th>하위 카테고리 추가</th>
-                                <td><button type="button" class="bt_gray" onclick="categoryChildrenAdd_click();">+ 하위추가</button></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="buttonCenter mt15">
-                    <button type="button" class="bt_red" onclick="delButton_click();">삭제</button>
-                    <button type="button" class="bt_black ml5" onclick="saveButton_click();">저장</button>
-                </div>
-                </form>
-            </div> -->
         </div> <!-- left_right_con -->
 
     </div> <!-- contents -->
 </section>
 <script src="<?=LIB_DIR?>/jsTree/dist/jstree.min.js"></script>
 <script type="text/javascript">
-    // 하위추가
-    function categoryChildrenAdd_click(){
-        alert_layer("더 이상 하위카테고리를<br/> 생성할 수 없습니다.")
-    }
-
-    // 삭제
-    function delButton_click(){
-        alert_layer("설정된 상품이 존재합니다.<br/> 상품 카테고리를 변경 후 삭제하세요.")
-    }
-
 var jstreeAction='';
 function createRoot() {
 	$.ajax({

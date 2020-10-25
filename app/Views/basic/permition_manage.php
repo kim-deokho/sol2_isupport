@@ -7,7 +7,7 @@
         <div class="left_right_con">
             <div class="left_con">
                 <div class="buttonRight mb10">
-                    <button type="button" class="bt_black" onclick="popPermitionForm()">등록</button>
+                    <button type="button" class="bt_black" onclick="popPermitionForm(event)">등록</button>
                 </div>
                 <div class="table_wrap" id="res_permain_list"></div> <!-- table_wrap -->
             </div> <!-- left_con -->
@@ -51,8 +51,12 @@ include_once 'popPerMainRegForm.php';
 ?>
 <script>
 listPermition();
-function popPermitionForm(pid) {
+function popPermitionForm(evt, pid) {
+    evt.preventDefault();
+    evt.stopPropagation();
+
     var pid = pid || '';
+    document.forms['regFrm'].bn_pid.value=pid;
     if(pid) {
         gcUtil.loader();
         $.ajax({

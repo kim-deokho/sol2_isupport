@@ -12,11 +12,11 @@
     if(count($rows)>0) {
         foreach($rows as $row) {
 ?>
-            <tr ondblclick="listPermitionSub('<?=$row['bn_pid']?>', '<?=$row['bn_name']?>')">
+            <tr onclick="listPermitionSub('<?=$row['bn_pid']?>', '<?=$row['bn_name']?>')">
                 <td><?=getSerial($row['bn_pid'], 3)?></td>
                 <td><?=$row['bn_name']?></td>
                 <td><?=$row['bn_use']?></td>
-                <td><button type="button" class="small set_button" onclick="popPermitionForm('<?=$row['bn_pid']?>');">수정</button></td>
+                <td><button type="button" class="small set_button" onclick="popPermitionForm(event, '<?=$row['bn_pid']?>');">수정</button></td>
             </tr>
 <?            
         }

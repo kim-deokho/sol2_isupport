@@ -62,7 +62,7 @@ class CommonModel extends BaseModel
         if($options['select']) $builder->select($options['select'], false);
         if($options['where']) $builder->where($options['where']);
         if($options['p_cd_code']) $builder->where('p_cd_pid=(SELECT cd_pid FROM tb_code WHERE cd_code='.$this->dDB->escape($options['p_cd_code']).')', null, false);
-        $builder->orderBy('cd_order', 'asc');
+        $builder->orderBy('cd_code asc, cd_order asc');
         $rows=$builder->get()->getResultArray();
         $result=array();
         if($options['returnType']=='code') {
@@ -86,11 +86,8 @@ class CommonModel extends BaseModel
 
     function InsertCodeData($params) {
         $maxCodeRows=$this->getCodeData(array('where'=>array('p_cd_pid'=>$params['p_cd_pid']), 'select'=>'max(cd_code) as max_code' ));
-        // if($maxCodeRows[0]) $new_code=getSerial($maxCodeRows[0]['max_code']+1, 3);
-        // else $new_code='001';
-        if($maxCodeRows[0]) $new_code=++$maxCodeRows[0]['max_code'];
-        else $new_code='A';
-        
+        if($maxCodeRows[0]) $new_code=getSerial($maxCodeRows[0]['max_code']+1, 3);
+        else $new_code='001';
 
         $maxOrderRows=$this->getCodeData(array('where'=>array('p_cd_pid'=>$params['p_cd_pid']), 'select'=>'max(cd_order) as max_order' ));
         if($maxOrderRows[0]) $new_order=$maxOrderRows[0]['max_order']+1;
@@ -101,12 +98,32 @@ class CommonModel extends BaseModel
         $builder->insert($regData);
     }
 
+    // 직원코드 생성
     function makeMnNo() {
-        $fix_no=date('Ym');
+        $fix_code='ST';
         $builder = $this->dDB->table('tb_manager');
-        $builder->where('left(mn_no, 6)', $fix_no);
-        $totCnt=$builder->countAllResults();
-        return $fix_no.'-'.getSerial($totCnt+1, 4);
+        $builder->selectMax('mn_no', 'max_no');
+        $row=$builder->get()->getRowArray();
+        if(!$row['max_no']) $new_no=$fix_code.getSerial(1, 6);
+        else {
+            $now_no=intval(str_replace($fix_code, '', $row['max_no']));
+            $new_no=$fix_code.getSerial($now_no+1, 6);
+        }
+        return $new_no;
+    }
+
+    // 거래처코드 생성
+    function makeCtCode() {
+        $fix_code='CL';
+        $builder = $this->dDB->table('tb_customer');
+        $builder->selectMax('ct_code', 'max_no');
+        $row=$builder->get()->getRowArray();
+        if(!$row['max_no']) $new_no=$fix_code.getSerial(1, 6);
+        else {
+            $now_no=intval(str_replace($fix_code, '', $row['max_no']));
+            $new_no=$fix_code.getSerial($now_no+1, 6);
+        }
+        return $new_no;
     }
     
 }
