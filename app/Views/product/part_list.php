@@ -23,9 +23,9 @@
                 </select>
 
                 <span class="ml20">사용여부</span>
-                <select name="pt_use" id="pt_use" class="wAuto">
+                <select name="search_use" id="search_use" class="wAuto">
                     <option value="">전체</option>
-<?                  foreach(array('Y', 'N') as $k) echo '<option value="'.$k.'" '.($k==$pt_use?'selected':'').'>'.$k.'</option>';?>      
+<?                  foreach(array('Y', 'N') as $k) echo '<option value="'.$k.'" '.($k==$search_use?'selected':'').'>'.$k.'</option>';?>      
                 </select>
             </div> <!-- box_row -->
 
@@ -128,7 +128,7 @@ $(function() {
 						"separator_after": false,
 						"label": "삭제",
 						"action": function (obj) {
-                            confirmBox("하위 카테고리까지 모두 삭제됩니다. \n복구가 불가능하니 신중히 삭제하시기 바랍니다!!!\n정말 삭제하시겠습니까?", function(){
+                            confirmBox("하위 카테고리까지 모두 삭제됩니다. <br><strong style='color:red'>복구가 불가능</strong>하니 신중히 삭제하시기 바랍니다!!!<br>정말 삭제하시겠습니까?", function(){
                                 // 데이타 삭제
 								$.ajax({
 									type : 'POST'
@@ -221,10 +221,10 @@ function popPartsRegFrm(pid) {
                     setFormData('regFrm', resJson);
                     $('#regFrm #pt_code').prop('disabled', true);
 
-                    // number_format Set
-                    // $('.input-comma').each(function(){
-                    //     $(this).val(inputNumberWithComma($(this).val()));
-                    // });
+                    //number_format Set
+                    $('.input-comma').each(function(){
+                        $(this).val(inputNumberWithComma($(this).val()));
+                    });
                     var reg_date_html=resJson.reg_date.substring(0, 10);
                     if(resJson.up_date) reg_date_html += ' (최종수정 : '+resJson.up_date.substring(0, 10)+')';
 

@@ -4,11 +4,11 @@
 
 .no_data {text-align:center;}
 
-
-
 .dis_inb {display:inline-block;}
 .dis_in {display:inline;}
 .dis_bl {display:block;}
+
+input:disabled {background-color:#f2f2f2;}
 
 /* 권한, 코드등록 */
 #res_main_name {position:absolute;bottom:0;font-weight:700;font-size:1.8rem;letter-spacing:.1rem;color:#04B45F;}
@@ -20,4 +20,8 @@
 
 /* table drag */
 .tDnD_whileDrag {opacity: .5;background-color:#fff8e5;}
+
+/* datatable pagaing */
+.dataTables_wrapper .dataTables_paginate {float:none;text-align:center;}
+table.dataTable.no-footer {border-bottom:0;}
 

@@ -62,7 +62,7 @@ class CommonModel extends BaseModel
         if($options['select']) $builder->select($options['select'], false);
         if($options['where']) $builder->where($options['where']);
         if($options['p_cd_code']) $builder->where('p_cd_pid=(SELECT cd_pid FROM tb_code WHERE cd_code='.$this->dDB->escape($options['p_cd_code']).')', null, false);
-        $builder->orderBy('cd_code asc, cd_order asc');
+        $builder->orderBy('cd_order asc, cd_code asc');
         $rows=$builder->get()->getResultArray();
         $result=array();
         if($options['returnType']=='code') {
@@ -80,6 +80,7 @@ class CommonModel extends BaseModel
         if($params['cd_name']) $upData['cd_name']=$params['cd_name'];
         if($params['cd_use']) $upData['cd_use']=$params['cd_use'];
         if($params['cd_order']) $upData['cd_order']=$params['cd_order'];
+        
         $builder = $this->dDB->table('tb_code');
         $builder->update($upData, $upWhere);
     }

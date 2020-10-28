@@ -32,16 +32,7 @@ function attachEvt() {
     });
 
     // 권한에 의한 저장,삭제,출력,엑셀
-    if(jsConfig.pagePermition) {
-        if(jsConfig.pagePermition.access!='Y') {
-            $('.container').addClass('d_none');
-            alertBox("접속 권한이 없습니다.", win_load, 'back');
-        }
-        if(jsConfig.pagePermition.save!='Y') $('.js-save-btn').addClass('d_none');
-        if(jsConfig.pagePermition.del!='Y') $('.js-del-btn').addClass('d_none');
-        if(jsConfig.pagePermition.print!='Y') $('.js-print-btn').addClass('d_none');
-        if(jsConfig.pagePermition.excel!='Y') $('.js-excel-btn').addClass('d_none');
-    }
+    setBtnPermition();
 
     // 파일찾기
     $('.find_file').on("click",function(){
@@ -66,6 +57,19 @@ function attachEvt() {
     getQueryStringObject();
     if(!jsConfig.multi_query) $('.multi_select').multipleSelect();
 
+} 
+// 권한에 의한 저장,삭제,출력,엑셀
+function setBtnPermition() {
+    if(jsConfig.pagePermition) {
+        if(jsConfig.pagePermition.access!='Y') {
+            $('.container').addClass('d_none');
+            alertBox("접속 권한이 없습니다.", win_load, 'back');
+        }
+        if(jsConfig.pagePermition.save!='Y') $('.js-save-btn').addClass('d_none');
+        if(jsConfig.pagePermition.del!='Y') $('.js-del-btn').addClass('d_none');
+        if(jsConfig.pagePermition.print!='Y') $('.js-print-btn').addClass('d_none');
+        if(jsConfig.pagePermition.excel!='Y') $('.js-excel-btn').addClass('d_none');
+    }
 }
 function win_load(type) {
     var type = type || 'reload';
@@ -299,10 +303,12 @@ function setFormQuery(pg) {
             $multi_select.multipleSelect('refresh');
         }
     }
+    // console.log('querys', querys);
     
     for(var k in querys) {
         d_k=decodeURIComponent(k);
         type_name=$("input[name='"+d_k+"']").attr('type');
+        // console.log('all',type_name, d_k, k, querys[k]);
         if(type_name=='checkbox' || type_name=='radio') {
             exp_val=querys[k].split(',');
             $("input:"+type_name+"[name='"+d_k+"']").each(function(ei) {
@@ -316,17 +322,21 @@ function setFormQuery(pg) {
             multiple=$("[name='"+d_k+"']").prop('multiple');
 
             if(tag_name=='SELECT' && multiple) {
-                // console.log('on', d_k);
+                // console.log('multi', d_k, k, querys[k]);
                 $select = $("[name='"+d_k+"']");
                 $select.multipleSelect();
                 exp_val=querys[k].split(',');
-                // console.log('exp_val', exp_val, d_k, k);
+
                 $select.multipleSelect('setSelects', exp_val);
             }
             else if(tag_name=='SELECT' && $("[name='"+d_k+"']").hasClass('js-single-selector')) {
+                // console.log('single', d_k, k, querys[k]);
                 $("[name='"+d_k+"']").select2('val', querys[k]);
             }
-            else $('#'+k).val(querys[k]);
+            else {
+                // console.log('normal', d_k, k, querys[k]);
+                $('#'+k).val(querys[k]);
+            }
         }
     }
     if(cateCtr) cateCtr.set();

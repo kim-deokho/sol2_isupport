@@ -16,12 +16,13 @@ class PcmanageModel extends BaseModel
             $builder->where('pd_pid', $options['pd_pid']);
             return $builder->get()->getRowArray();
         }
-        if($options['pd_use']) $builder->where('pd_use', $options['pd_use']);
-        if($options['pc_pid1']) $builder->where('pc_pid1', $options['pc_pid1']);
-        if($options['pc_pid2']) $builder->where('pc_pid2', $options['pc_pid2']);
-        if($options['pc_pid3']) $builder->where('pc_pid3', $options['pc_pid3']);
-        if($options['pd_kind']) $builder->where('pd_kind', $options['pd_kind']);
-        if($options['pd_name']) $builder->like('pd_name', $options['pd_name']);
+        if($options['search_use']) $builder->where('pd_use', $options['search_use']);
+        if($options['search_kind']) $builder->where('pd_kind', $options['search_kind']);
+        $search_cate_id='';
+        if($options['cate1']) $search_cate_id.=$options['cate1'];
+        if($options['cate2']) $search_cate_id.=$options['cate2'];
+        if($options['cate3']) $search_cate_id.=$options['cate3'];
+        if($search_cate_id) $builder->like('pd_pc_code', $search_cate_id, 'after');
         if($options['searchWord'] && $options['searchKey']) {
             if(!is_array($options['searchKey'])) $options['searchKey']=array($options['searchKey']);
             $keyword=trim($options['searchWord']);
@@ -40,6 +41,7 @@ class PcmanageModel extends BaseModel
 				$builder->limit($options['rcnt'], $snum);
             }
             $rows = $builder->get()->getResultArray();
+            // debug($options, $this->dDB->getLastQuery());
             return $rows;
 		} else {
 			return $builder->countAllResults();
@@ -86,11 +88,14 @@ class PcmanageModel extends BaseModel
     }
     
     function getCategoryNewNodeId($options) {
+        $max_depth=$params['max_depth']?$params['max_depth']:3;
+        $max_length=$max_depth*3;
+
         $builder = $this->dDB->table('tb_product_category');
 		$builder->selectMax('pc_code');
 		if($options['parent_id']) {
 			if($options['parent_id']=='#') $builder->where(array('pc_depth'=>'1'));
-			else $builder->where('p_pc_parent', getSerial($options['parent_id'], 9, 'back'));
+			else $builder->where('p_pc_parent', getSerial($options['parent_id'], $max_length, 'back'));
 		}
 		if($options['name']) $builder->where('pc_name', $options['name']);
 		if($options['depth']) $builder->where('pc_depth', $options['depth']);
@@ -115,9 +120,12 @@ class PcmanageModel extends BaseModel
 	}
 
 	function addCategoryNode($params) {
+        $max_depth=$params['max_depth']?$params['max_depth']:3;
+        $max_length=$max_depth*3;
+
         $result=array();
-        $cate_id=getSerial($params['id'], 9, 'back');
-        $parent_cate_id=$params['parent_id']=='#'?null:getSerial($params['parent_id'], 9, 'back');
+        $cate_id=getSerial($params['id'], $max_length, 'back');
+        $parent_cate_id=$params['parent_id']=='#'?null:getSerial($params['parent_id'], $max_length, 'back');
 		$options=array(
 			'where'=>array(
 				'p_pc_parent'=>$parent_cate_id
@@ -169,9 +177,12 @@ class PcmanageModel extends BaseModel
     }
     
     function updateCategoryName($params) {
+        $max_depth=$params['max_depth']?$params['max_depth']:3;
+        $max_length=$max_depth*3;
+
         $result=array();
-        $cate_id=getSerial($params['id'], 9, 'back');
-        $parent_cate_id=$params['parent_id']=='#'?null:getSerial($params['parent_id'], 9, 'back');
+        $cate_id=getSerial($params['id'], $max_length, 'back');
+        $parent_cate_id=$params['parent_id']=='#'?null:getSerial($params['parent_id'], $max_length, 'back');
 		$options=array(
 			'where'=>array(
 				'p_pc_parent'=>$parent_cate_id
@@ -205,10 +216,12 @@ class PcmanageModel extends BaseModel
             $builder->where('pt_pid', $options['pt_pid']);
             return $builder->get()->getRowArray();
         }
-        if($options['pt_use']) $builder->where('pt_use', $options['pt_use']);
-        if($options['pt_tc_pid1']) $builder->where('pt_tc_pid1', $options['pt_tc_pid1']);
-        if($options['pt_tc_pid2']) $builder->where('pt_tc_pid2', $options['pt_tc_pid2']);
+        if($options['search_use']) $builder->where('pt_use', $options['search_use']);
         if($options['ct_pid']) $builder->where('ct_pid', $options['ct_pid']);
+        $search_cate_id='';
+        if($options['cate1']) $search_cate_id.=$options['cate1'];
+        if($options['cate2']) $search_cate_id.=$options['cate2'];
+        if($search_cate_id) $builder->like('pt_tc_code', $search_cate_id, 'after');
         if($options['searchWord'] && $options['searchKey']) {
             if(!is_array($options['searchKey'])) $options['searchKey']=array($options['searchKey']);
             $keyword=trim($options['searchWord']);
@@ -274,11 +287,14 @@ class PcmanageModel extends BaseModel
     }
     
     function getPartCategoryNewNodeId($options) {
+        $max_depth=$params['max_depth']?$params['max_depth']:2;
+        $max_length=$max_depth*3;
+
         $builder = $this->dDB->table('tb_part_category');
 		$builder->selectMax('tc_code');
 		if($options['parent_id']) {
 			if($options['parent_id']=='#') $builder->where(array('tc_depth'=>'1'));
-			else $builder->where('p_tc_parent', getSerial($options['parent_id'], 9, 'back'));
+			else $builder->where('p_tc_parent', getSerial($options['parent_id'], $max_length, 'back'));
 		}
 		if($options['name']) $builder->where('tc_name', $options['name']);
 		if($options['depth']) $builder->where('tc_depth', $options['depth']);
@@ -303,9 +319,11 @@ class PcmanageModel extends BaseModel
 	}
 
 	function addPartCategoryNode($params) {
+        $max_depth=$params['max_depth']?$params['max_depth']:2;
+        $max_length=$max_depth*3;
         $result=array();
-        $cate_id=getSerial($params['id'], 9, 'back');
-        $parent_cate_id=$params['parent_id']=='#'?null:getSerial($params['parent_id'], 9, 'back');
+        $cate_id=getSerial($params['id'], $max_length, 'back');
+        $parent_cate_id=$params['parent_id']=='#'?null:getSerial($params['parent_id'], $max_length, 'back');
 		$options=array(
 			'where'=>array(
 				'p_tc_parent'=>$parent_cate_id
@@ -353,9 +371,11 @@ class PcmanageModel extends BaseModel
     }
     
     function updatePartCategoryName($params) {
+        $max_depth=$params['max_depth']?$params['max_depth']:2;
+        $max_length=$max_depth*3;
         $result=array();
-        $cate_id=getSerial($params['id'], 9, 'back');
-        $parent_cate_id=$params['parent_id']=='#'?null:getSerial($params['parent_id'], 9, 'back');
+        $cate_id=getSerial($params['id'], $max_length, 'back');
+        $parent_cate_id=$params['parent_id']=='#'?null:getSerial($params['parent_id'], $max_length, 'back');
 		$options=array(
 			'where'=>array(
 				'p_tc_parent'=>$parent_cate_id

@@ -9,9 +9,9 @@
 			<span>부품 카테고리 설정</span>
 			<span></span>
 		</div> <!-- modal_title -->
-		<!-- <div class="modal_close">
+		<div class="modal_close">
 			<a href="#" rel="modal:close"><img src="<?=IMG_DIR?>/pop_close.png" alt="팝업닫기" /></a>
-		</div> -->
+		</div>
 	</div> <!-- modal_header -->
 
 	<div class="modal_contents">
@@ -23,6 +23,7 @@
 				</div> <!-- category_wrap -->
 			</div> <!-- left_con -->
         </div> <!-- left_right_con -->
-        <button type="button" class="bt_black buttonCenter mt10" onclick="win_load('reload')">적용</button>
+        <p class="fc10 mt10">* 카테고리 추가 및 변경/삭제시 새로고침 해주세요.</p>
+        <button type="button" class="bt_black buttonCenter mt5" onclick="win_load('reload')">새로고침</button>
 	</div> <!-- modal_contents -->
 </div> <!-- modal -->

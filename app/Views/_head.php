@@ -6,9 +6,10 @@
 		<link rel="stylesheet" type="text/css" href="<?=CSS_DIR?>/reset.css">
 		<link rel="stylesheet" type="text/css" href="<?=CSS_DIR?>/jquery-ui.css">
 		<link rel="stylesheet" type="text/css" href="<?=CSS_DIR?>/jquery.modal.min.css">
-		<link rel="stylesheet" type="text/css" href="<?=CSS_DIR?>/jquery.modal.css">
+        <link rel="stylesheet" type="text/css" href="<?=CSS_DIR?>/jquery.modal.css">        
 		<link rel="stylesheet" type="text/css" href="<?=CSS_DIR?>/multiple-select.css">
-		<link rel="stylesheet" type="text/css" href="<?=CSS_DIR?>/select2.min.css">
+        <link rel="stylesheet" type="text/css" href="<?=CSS_DIR?>/select2.min.css">
+        <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css">
 		<link rel="stylesheet" type="text/css" href="<?=CSS_DIR?>/common.css?ver=<?=$tDate?>">
 		
 		 <!-- 디자인 색상 선택 -->
@@ -35,6 +36,7 @@
 		<script type="text/javascript" src="<?=JS_DIR?>/jquery.blockUI.js"></script>
 		<script type="text/javascript" src="<?=JS_DIR?>/multiple-select.min.js"></script>
 		<script type="text/javascript" src="<?=JS_DIR?>/select2.min.js"></script>
+		<script type="text/javascript" src="//cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
 		<script type="text/javascript" src="<?=JS_DIR?>/input_money_by_name.js"></script>
 		<script type="text/javascript" src="<?=JS_DIR?>/layout.js?ver=<?=$tDate?>"></script>
 		<script type="text/javascript" src="<?=JS_DIR?>/util.js"></script>

@@ -12,6 +12,7 @@
                     <div class="mostCategoryAdd" onclick="createRoot()">+ 최상위 카테고리 추가</div>
                     <div id='jstree_category'></div>
                 </div> <!-- category_wrap -->
+                <p class="fc10 mt10 fs14">* 카테고리에서 마우스 오른쪽 버튼을 이용하세요.</p>
             </div> <!-- left_con -->
         </div> <!-- left_right_con -->
 
@@ -101,7 +102,7 @@ $(function() {
 						"separator_after": false,
 						"label": "삭제",
 						"action": function (obj) {
-                            confirmBox("하위 카테고리까지 모두 삭제됩니다. \n복구가 불가능하니 신중히 삭제하시기 바랍니다!!!\n정말 삭제하시겠습니까?", function(){
+                            confirmBox("하위 카테고리까지 모두 삭제됩니다. <br><strong style='color:red'>복구가 불가능</strong>하니 신중히 삭제하시기 바랍니다!!!<br>정말 삭제하시겠습니까?", function(){
                                 // 데이타 삭제
 								$.ajax({
 									type : 'POST'

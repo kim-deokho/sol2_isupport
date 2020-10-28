@@ -21,9 +21,9 @@
                 </select>
 
                 <span class="ml20">구분</span>
-                <select name="pd_kind" id="pd_kind" class="wAuto">
+                <select name="search_kind" id="search_kind" class="wAuto">
                     <option value="">전체</option>
-<?                  foreach($setting['code']['ProductKind'] as $info) echo '<option value="'.$info['cd_pid'].'" '.($info['cd_pid']==$pd_kind?'selected':'').'>'.$info['cd_name'].'</option>';?>                      
+<?                  foreach($setting['code']['ProductKind'] as $info) echo '<option value="'.$info['cd_pid'].'" '.($info['cd_pid']==$search_kind?'selected':'').'>'.$info['cd_name'].'</option>';?>                      
                 </select>
             </div> <!-- box_row -->
             <div class="box_row mt10">
@@ -36,9 +36,9 @@
                 <!-- <input type="text" name="pd_name" id="pd_name" class="mWt280" value="<?=$pd_name?>" placeholder="상품명" /> -->
 
                 <span class="ml20">사용여부</span>
-                <select name="pd_use" id="pd_use" class="wAuto">
+                <select name="search_use" id="search_use" class="wAuto">
                     <option value="">전체</option>
-<?                  foreach(array('Y', 'N') as $k) echo '<option value="'.$k.'" '.($k==$pd_use?'selected':'').'>'.$k.'</option>';?>      
+<?                  foreach(array('Y', 'N') as $k) echo '<option value="'.$k.'" '.($k==$search_use?'selected':'').'>'.$k.'</option>';?>      
                 </select>
 
                 <button type="submit" class="bt_navy ml10">조회</button>

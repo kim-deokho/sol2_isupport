@@ -22,6 +22,7 @@ class Product extends BaseController
         $this->pcmanage_model = new PcmanageModel();
         $this->part_model = new PartModel();
         $this->fix_codes = new Fixcodes();
+        $this->inprice_history_model = new InpricehistoryModel();
         
     }
 
@@ -78,6 +79,19 @@ class Product extends BaseController
         else if($this->Params['mode']=='get_part') { // 부품정보
             $part=$this->part_model->find($this->Params['pid']);
             echo json_encode($part);
+        }
+        else if($this->Params['mode']=='get_inprice_history') { // 입고가이력
+            $rows=$this->inprice_history_model->select('tb_product_inprice_history.*, (select pd_code from tb_product where pd_pid=tb_product_inprice_history.pd_pid) as pd_code, (select pd_name from tb_product where pd_pid=tb_product_inprice_history.pd_pid) as pd_name')->where('pd_pid', $this->Params['pd_pid'])->findAll();
+            $data=array();
+            $totCnt=count($rows);
+            foreach($rows as $i=>$row) {
+                $data[$i]['no']=$totCnt--;
+                $data[$i]['pd_code']=$row['pd_code'];
+                $data[$i]['pd_name']=$row['pd_name'];
+                $data[$i]['in_price']=number_format($row['pi_in_price']);
+                $data[$i]['in_date']=$row['pi_in_date'];
+            }
+            echo json_encode(array('data'=>$data));
         }
     }
 
@@ -212,7 +226,6 @@ class Product extends BaseController
 
                 // 입고가 변경이력
                 if($this->Params['old_in_price']!=$this->Params['pd_in_price']) {
-                    $inprice_history_model = new InpricehistoryModel();
                     $historyData=array(
                         'pd_pid'=>$this->Params['pd_pid']
                         ,'pi_in_price'=>$this->Params['pd_in_price']
@@ -316,11 +329,12 @@ class Product extends BaseController
 
                 // 카테고리 PID 매칭 등록
                 $category_rows=$this->pcmanage_model->getPartCategorys();
+                
                 $queryData['pt_tc_pid1']=null;
                 $queryData['pt_tc_pid2']=null;
                 foreach($category_rows as $c_row) {
-                    if($c_row['pt_code']==$this->Params['pt_cate1'].'000') $queryData['pt_tc_pid1']=$c_row['pt_tc_pid'];
-                    else if($c_row['pt_code']==$this->Params['pt_cate1'].$this->Params['pt_cate2']) $queryData['pt_tc_pid2']=$c_row['pt_tc_pid'];
+                    if($c_row['tc_code']==$this->Params['pt_cate1'].'000') $queryData['pt_tc_pid1']=$c_row['tc_pid'];
+                    else if($c_row['tc_code']==$this->Params['pt_cate1'].$this->Params['pt_cate2']) $queryData['pt_tc_pid2']=$c_row['tc_pid'];
                 }
 
                 if($this->Params['is_auto']=='Y') { // 부품번호 자동생성
@@ -341,6 +355,19 @@ class Product extends BaseController
                 $msg="정상적으로 등록되었습니다.";
             }
             $Scripts[] = "parent.alertBox('".$msg."', parent.win_load)";
+            jsExecute($Scripts);
+            exit;
+        }
+        else if($this->Params['mode']=='reg_product_inprice') {    // 입고가 등록
+            // 입고가 수정
+            $this->Params['pi_in_price']=str_replace(',', '', $this->Params['pi_in_price']);
+            $this->product_model->update($this->Params['pd_pid'], array('pd_in_price'=>$this->Params['pi_in_price']));
+
+            // 입고가 이력등록
+            $historyData=$this->Params;
+            $historyData['reg_id']=$this->session->get('ss_mn_pid');
+            $this->inprice_history_model->insert($historyData);
+            $Scripts[] = "parent.alertBox('등록되었습니다.', parent.win_load)";
             jsExecute($Scripts);
             exit;
         }
@@ -499,15 +526,6 @@ class Product extends BaseController
         $this->_footer();
 	}
 
-
-	public function inprice_list()
-	{
-		$viewParams=$this->Params;
-
-        $this->_header();
-        echo view('product/inprice_list', $viewParams);
-        $this->_footer();
-    }
     
     function part_list() { 
         $trader_model = new TraderModel();
@@ -549,6 +567,7 @@ class Product extends BaseController
         $viewParams['setting']=$this->setting;
         $viewParams['buyPids']=$buyPids;
         $viewParams['categorys']=$this->pcmanage_model->getPartCategorys(array('type'=>'pid'));
+        // debug($viewParams['categorys']);
         $listHtml=view('product/part_list_data', $viewParams);
         echo json_encode(array('totCnt'=>$totCnt, 'rcnt'=>$viewParams['rcnt'], 'page'=>$viewParams['page'], 'html'=>$listHtml));
     }
@@ -557,35 +576,30 @@ class Product extends BaseController
         $trader_model = new TraderModel();
         $this->Params['rcnt']=0;
         $this->Params['page']=1;
-        $rows=$this->pcmanage_model->getProductList($this->Params);
-        //상품구분
-        $ProductKind=$this->common_model->getCodeData(array('p_cd_code'=>'0201', 'returnType'=>'pid'));
-        
+        $rows=$this->pcmanage_model->getPartsList($this->Params);
         // 매입처
         $buyRows=$trader_model->where('ct_use', 'Y')->whereIn('ct_kind', array('B', 'C'))->findAll();
         $buyPids=array();
         foreach($buyRows as $b_row) $buyPids[$b_row['ct_pid']]=$b_row['ct_name'];
 
         // 카테고리
-        $categorys=$this->pcmanage_model->getCategorys(array('type'=>'pid'));
+        $categorys=$this->pcmanage_model->getPartCategorys(array('type'=>'pid'));
 
         $datas=array();
         $totCnt = count($rows);
         if($totCnt<1) return;
         foreach($rows as $i=>$row) {
-            $categoryPath = array($categorys[$row['pc_pid1']]['pc_name']);
-            if($row['pc_pid2']) array_push($categoryPath, $categorys[$row['pc_pid2']]['pc_name']);
-            if($row['pc_pid3']) array_push($categoryPath, $categorys[$row['pc_pid3']]['pc_name']);
+            $categoryPath = array($categorys[$row['pt_tc_pid1']]['tc_name']);
+            if($row['pt_tc_pid2']) array_push($categoryPath, $categorys[$row['pt_tc_pid2']]['tc_name']);
 
             $datas[$i]['no']=$totCnt--;
             $datas[$i]['buyer']=$buyPids[$row['ct_pid']];
             $datas[$i]['category']=implode(' > ', $categoryPath);
-            $datas[$i]['pd_code']=$row['pd_code'];
-            $datas[$i]['pd_name']=$row['pd_name'];
-            $datas[$i]['pd_kind']=$ProductKind[$row['pd_kind']]['cd_name'];
-            $datas[$i]['in_price']=number_format($row['pd_in_price']);
-            $datas[$i]['out_price']=number_format($row['pd_out_price']);
-            $datas[$i]['is_use']=$row['pd_use'];
+            $datas[$i]['pt_code']=$row['pt_code'];
+            $datas[$i]['pt_name']=$row['pt_name'];
+            $datas[$i]['in_price']=number_format($row['pt_in_price']);
+            $datas[$i]['pt_wages']=number_format($row['pt_wages']);
+            $datas[$i]['is_use']=$row['pt_use'];
             $datas[$i]['reg_date']=dateFormat('Y-m-d', $row['reg_date']);
         }
 
@@ -593,13 +607,12 @@ class Product extends BaseController
             'A' => array(15, 'no', 'No'),
             'B' => array(15, 'buyer',  '매입처'),
             'C' => array(50, 'category', '카테고리'),
-            'D' => array(30, 'pd_code', '상품코드'),
-            'E' => array(50, 'pd_name', '상품명'),
-            'F' => array(15, 'pd_kind', '구분'),
-            'G' => array(15, 'in_price', '입고가'),
-            'H' => array(15, 'out_price', '정상가'),
-            'I' => array(15, 'is_use', '사용유무'),
-            'J' => array(15, 'reg_date', '등록일')
+            'D' => array(30, 'pt_code', '부품코드'),
+            'E' => array(50, 'pt_name', '부품명'),
+            'F' => array(15, 'in_price', '부품가'),
+            'G' => array(15, 'pt_wages', '공임비'),
+            'H' => array(15, 'is_use', '사용유무'),
+            'I' => array(15, 'reg_date', '등록일')
         );
 
         
@@ -625,7 +638,7 @@ class Product extends BaseController
             }
         }
 
-        $filename = date('Ymd').'_product_list';
+        $filename = date('Ymd').'_part_list';
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment; filename="'.$filename.'.xlsx"');
@@ -639,5 +652,101 @@ class Product extends BaseController
 		$options=array('parent_id'=>$this->Params['parent_id']);
 		$NewNodeId=$this->pcmanage_model->getPartCategoryNewNodeId($options);
 		echo json_encode(array('id'=>$NewNodeId));
-	}
+    }
+    
+    /** 입고가관리 */
+    function inprice_list() {
+        $viewParams=$this->Params;
+        $viewParams['setting']=$this->setting;
+       
+        $this->_header();
+        echo view('product/inprice_list', $viewParams);
+        $this->_footer();
+    }
+
+    function inprice_list_data() {
+        //상품구분
+        if(!$this->setting['code']['ProductKind']) $this->setting['code']['ProductKind']=$this->common_model->getCodeData(array('p_cd_code'=>'0201', 'returnType'=>'pid'));
+        $this->Params['rcnt']=$this->paging_rcnt;
+        $viewParams=$this->Params;
+        $rows=$this->pcmanage_model->getProductList($this->Params);
+        unset($this->Params['page']);
+        $totCnt=$this->pcmanage_model->getProductList($this->Params);
+        $viewParams['totCnt']=$totCnt;
+        $viewParams['rows']=$rows;
+        $viewParams['num'] = $totCnt - (($viewParams['page']-1)*$viewParams['rcnt']);
+        $viewParams['setting']=$this->setting;
+
+        $viewParams['categorys']=$this->pcmanage_model->getCategorys(array('type'=>'pid'));
+        $listHtml=view('product/inprice_list_data', $viewParams);
+        echo json_encode(array('totCnt'=>$totCnt, 'rcnt'=>$viewParams['rcnt'], 'page'=>$viewParams['page'], 'html'=>$listHtml));
+    }
+
+    function inprice_list_excel() {
+        $this->Params['rcnt']=0;
+        $this->Params['page']=1;
+        $rows=$this->pcmanage_model->getProductList($this->Params);
+        //상품구분
+        $ProductKind=$this->common_model->getCodeData(array('p_cd_code'=>'0201', 'returnType'=>'pid'));
+
+        // 카테고리
+        $categorys=$this->pcmanage_model->getCategorys(array('type'=>'pid'));
+
+        $datas=array();
+        $totCnt = count($rows);
+        if($totCnt<1) return;
+        foreach($rows as $i=>$row) {
+            $categoryPath = array($categorys[$row['pc_pid1']]['pc_name']);
+            if($row['pc_pid2']) array_push($categoryPath, $categorys[$row['pc_pid2']]['pc_name']);
+            if($row['pc_pid3']) array_push($categoryPath, $categorys[$row['pc_pid3']]['pc_name']);
+
+            $datas[$i]['no']=$totCnt--;
+            $datas[$i]['category']=implode(' > ', $categoryPath);
+            $datas[$i]['pd_code']=$row['pd_code'];
+            $datas[$i]['pd_name']=$row['pd_name'];
+            $datas[$i]['pd_kind']=$ProductKind[$row['pd_kind']]['cd_name'];
+            $datas[$i]['in_price']=number_format($row['pd_in_price']);
+        }
+
+        $cells = array(
+            'A' => array(15, 'no', 'No'),
+            'B' => array(50, 'category', '카테고리'),
+            'C' => array(30, 'pd_code', '상품코드'),
+            'D' => array(50, 'pd_name', '상품명'),
+            'E' => array(15, 'pd_kind', '구분'),
+            'F' => array(15, 'in_price', '입고가')
+        );
+
+        
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        foreach ($cells as $key => $val) {
+            $cellName = $key.'1';
+
+            $sheet->getColumnDimension($key)->setWidth($val[0]);
+            $sheet->getRowDimension('1')->setRowHeight(25);
+            $sheet->setCellValue($cellName, $val[2]);
+            $sheet->getStyle($cellName)->getFont()->setBold(true);
+            $sheet->getStyle($cellName)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle($cellName)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+        }
+
+        for ($i = 2; $row = array_shift($datas); $i++) {
+            foreach ($cells as $key => $val) {
+                $cellName=$key.$i;
+                $sheet->setCellValue($cellName, $row[$val[1]]);
+            }
+        }
+
+        $filename = date('Ymd').'_inprice_list';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="'.$filename.'.xlsx"');
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
+        exit;
+    }
 }
