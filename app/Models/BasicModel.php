@@ -100,5 +100,32 @@ class BasicModel extends BaseModel
 			return $builder->countAllResults();
 		}    
     }
+
+    function getNoticeList($options) {
+        // debug($options);
+        $builder = $this->dDB->table('tb_board');
+        $builder->select('tb_board.*, (select mn_name from tb_manager where mn_pid=tb_board.reg_id) mn_name', false);
+        $builder->where(array('bd_notice'=>'Y', 'bd_del'=>'N'));
+        if($options['sdate'] && $options['edate']) {
+            $builder->where('DATE(reg_date) BETWEEN '.$this->dDB->escape($options['sdate']).' AND '.$this->dDB->escape($options['edate']), null, false);
+        }
+        if($options['searchWord']) {
+            $builder->like('bd_title', $options['searchWord']);
+        }
+        if($options['page'] > 0) {
+            $order=$options['order']?$options['order']:'bd_pid';
+            $sort=$options['sort']?$options['sort']:'desc';
+			$builder->orderBy($order, $sort);
+			if($options['rcnt'] > 0) {
+				$snum = ($options['page']-1)*$options['rcnt'];
+				$builder->limit($options['rcnt'], $snum);
+            }
+            $rows = $builder->get()->getResultArray();
+            // debug($options, $this->dDB->getLastQuery());
+            return $rows;
+		} else {
+			return $builder->countAllResults();
+		}    
+    }
     
 }

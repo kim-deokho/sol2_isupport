@@ -50,6 +50,3 @@
         </form>
 	</div> <!-- modal_contents -->
 </div> <!-- modal -->
-
-<script type="text/javascript">	
-</script>

@@ -8,6 +8,7 @@ use App\Models\PersubModel;
 use App\Models\PeraddModel;
 use App\Models\CompanyModel;
 use App\Models\TraderModel;
+use App\Models\BoardModel;
 
 use App\Libraries\Fileuploader;
 use App\Libraries\Fixcodes;
@@ -26,6 +27,7 @@ class Basic extends BaseController
         $this->persub_model = new PersubModel();
         $this->peradd_model = new PeraddModel();
         $this->company_model = new CompanyModel();
+        $this->board_model = new BoardModel();
         $this->fix_codes = new Fixcodes();
         
         //부서
@@ -190,7 +192,10 @@ class Basic extends BaseController
             // debug($this->Params, $this->manager_model);
             echo json_encode($trader);
         }
-        
+        else if($this->Params['mode']=='get_notice') {  // 공지사항 정보가져오기
+            $notice=$this->board_model->find($this->Params['pid']);
+            echo json_encode($notice);
+        }
     }
 
     function execute() {
@@ -301,46 +306,42 @@ class Basic extends BaseController
             jsExecute(array('parent.gcUtil.loader("hide")', 'parent.alertBox("정상적으로 저장되었습니다.", parent.window.close)'));
         }
         else if($this->Params['mode']=='reg_company') { // 회사정보
+            // ini_set('memory_limit','-1');
             $file_uploader = new Fileuploader();
             $dataParams=$this->Params;
+            
             // 업체로고 이미지
             if($_FILES['file_com_logo']['name']) {
                 $file_title="업체로고";
-                if($_FILES['file_com_logo']['error']>0) {
-                    $Scripts[] = "parent.alertBox('[".$file_title." 오류] 파일 업로드시 오류가 발생하였습니다.(".$_FILES['file_com_logo']['error'].")', parent.gcUtil.loader, 'hide')";
+                $upFile=getAWSFileName($_FILES['file_com_logo']['name']);
+                if($upFile['err_msg']) {
+                    $Scripts[] = "parent.alertBox('[".$file_title." 오류] 파일 업로드시 오류가 발생하였습니다.(".$upFile['err_msg'].")', parent.gcUtil.loader, 'hide')";
                     jsExecute($Scripts);
                     exit;
                 }
-                $res=$file_uploader->fileImgUpload($_FILES['file_com_logo'], $file_title, true);
-                if($res['status']<0) {
-                    $Scripts[] = "parent.alertBox('[".$file_title." 오류] ".$res['msg']."', parent.gcUtil.loader, 'hide')";
-                    jsExecute($Scripts);
-                    exit;
-                }
-                $dataParams['com_logo']=$res['file_name'];
+                $result=s3_upload($_FILES['file_com_logo']['tmp_name'],  $upFile['file']);
+                // debug($upFile, $result);
+                // exit;
+                $dataParams['com_logo']=$upFile['file'];
             }
 
             // 업체도장이미지
             if($_FILES['file_com_seal']['name']) {
                 $file_title="업체도장";
-                if($_FILES['file_com_seal']['error']>0) {
-                    $Scripts[] = "parent.alertBox('[".$file_title." 오류] 파일 업로드시 오류가 발생하였습니다.(".$_FILES['file_com_seal']['error'].")', parent.gcUtil.loader, 'hide')";
+                $upFile=getAWSFileName($_FILES['file_com_seal']['name']);
+                if($upFile['err_msg']) {
+                    $Scripts[] = "parent.alertBox('[".$file_title." 오류] 파일 업로드시 오류가 발생하였습니다.(".$upFile['err_msg'].")', parent.gcUtil.loader, 'hide')";
                     jsExecute($Scripts);
                     exit;
                 }
-                $res=$file_uploader->fileImgUpload($_FILES['file_com_seal'], $file_title, true);//, array('png')
-                if($res['status']<0) {
-                    $Scripts[] = "parent.alertBox('[".$file_title." 오류] ".$res['msg']."', parent.gcUtil.loader, 'hide')";
-                    jsExecute($Scripts);
-                    exit;
-                }
-                $dataParams['com_seal']=$res['file_name'];
+                $result=s3_upload($_FILES['file_com_seal']['tmp_name'],  $upFile['file']);
+                $dataParams['com_seal']=$upFile['file'];
             }
             $target_query_id='reg_id';
             if($this->Params['com_pid']) $target_query_id='up_id';
             $dataParams[$target_query_id]=$this->session->get('ss_mn_pid');
             $this->company_model->save($dataParams);
-            debug($dataParams);
+            // debug($dataParams);
             $Scripts[] = "parent.alertBox('정상처리되었습니다.')";
             jsExecute($Scripts);
         }
@@ -400,6 +401,87 @@ class Basic extends BaseController
                 $trader_model->update($this->Params['ct_pid'], $RegData);
             }
             jsExecute(array('parent.location.reload()'));
+        }
+        else if($this->Params['mode']=='reg_notice') {  // 공지등록/수정
+            $dataParams=$this->Params;
+            $dataParams['bd_notice']='Y';
+            $row=array();
+            if($this->Params['bd_pid']) {
+                $row=$this->board_model->find($this->Params['bd_pid']);
+                if($row['reg_id']!=$this->session->get('ss_mn_pid') && $row['bn_pid']!='1') {  //작성자 또는 최고관리자만 수정가능
+                    $Scripts[] = "parent.alertBox('작성자 또는 최고관리자만 수정 가능합니다.', parent.gcUtil.loader, 'hide')";
+                    jsExecute($Scripts);
+                    exit;
+                }
+            }
+
+            // 첨부파일1
+            $is_file1_del=false;
+            if($_FILES['file1']['name']) {
+                $file_title="첨부파일1";
+                $upFile=getAWSFileName($_FILES['file1']['name'], false);
+                if($upFile['err_msg']) {
+                    $Scripts[] = "parent.alertBox('[".$file_title." 오류] 파일 업로드시 오류가 발생하였습니다.(".$upFile['err_msg'].")', parent.gcUtil.loader, 'hide')";
+                    jsExecute($Scripts);
+                    exit;
+                }
+                $result=s3_upload($_FILES['file1']['tmp_name'],  $upFile['file']);
+                $dataParams['bd_file1']=$upFile['file'];
+                $dataParams['bd_org_file1']=$_FILES['file1']['name'];
+                $is_file1_del=true;
+            }
+            else if($this->Params['file1_del']=='Y') {
+                $dataParams['bd_file1']='';
+                $dataParams['bd_org_file1']='';
+                $is_file1_del=true;
+            }
+
+            // 첨부파일2
+            $is_file2_del=false;
+            if($_FILES['file2']['name']) {
+                $file_title="첨부파일2";
+                $upFile=getAWSFileName($_FILES['file2']['name'], false);
+                if($upFile['err_msg']) {
+                    $Scripts[] = "parent.alertBox('[".$file_title." 오류] 파일 업로드시 오류가 발생하였습니다.(".$upFile['err_msg'].")', parent.gcUtil.loader, 'hide')";
+                    jsExecute($Scripts);
+                    exit;
+                }
+                $result=s3_upload($_FILES['file2']['tmp_name'],  $upFile['file']);
+                $dataParams['bd_file2']=$upFile['file'];
+                $dataParams['bd_org_file2']=$_FILES['file2']['name'];
+                $is_file2_del=true;
+            }
+            else if($this->Params['file2_del']=='Y') {
+                $dataParams['bd_file2']='';
+                $dataParams['bd_org_file2']='';
+                $is_file2_del=true;
+            }
+
+            if($this->Params['bd_pid']) {   // 수정
+                if($is_file1_del && $row['bd_file1']) s3_del($row['bd_file1']);
+                if($is_file2_del && $row['bd_file2']) s3_del($row['bd_file2']);
+                $dataParams['up_id']=$this->session->get('ss_mn_pid');
+                $this->board_model->update($this->Params['bd_pid'], $dataParams);
+            }
+            else {  // 등록
+                $dataParams['reg_id']=$this->session->get('ss_mn_pid');
+                $this->board_model->insert($dataParams);
+            }
+            $Scripts[] = "parent.alertBox('정상처리되었습니다.', parent.location.reload())";
+            jsExecute($Scripts);
+        }
+        else if($this->Params['mode']=='del_notice') {  // 공지삭제
+            $result=array();
+            $row=$this->board_model->find($this->Params['bd_pid']);
+            if($row['reg_id']!=$this->session->get('ss_mn_pid') && $row['bn_pid']!='1') {  //작성자 또는 최고관리자만 삭제가능
+                $result['err_msg'] = "작성자 또는 최고관리자만 삭제 가능합니다.";
+            }
+            else {
+                $upData=array('bd_del'=>'Y', 'bd_del_date'=>date('Y-m-d H:i:s'));
+                $this->board_model->update($this->Params['bd_pid'], $upData);
+                $result['msg']="삭제되었습니다.";
+            }
+            echo json_encode($result);
         }
         
     }
@@ -482,6 +564,56 @@ class Basic extends BaseController
         $listHtml=view('basic/trader_list_data', $viewParams);
         echo json_encode(array('totCnt'=>$totCnt, 'rcnt'=>$viewParams['rcnt'], 'page'=>$viewParams['page'], 'html'=>$listHtml));
 
+    }
+
+    function notice_list() {    
+        $viewParams=$this->Params;
+        $viewParams['sdate']=$this->Params['sdate']?$this->Params['sdate']:date('Y').'-01-01';
+        $viewParams['edate']=$this->Params['edate']?$this->Params['edate']:date('Y-m-d');
+        $viewParams['setting']=$this->setting;
+       
+        $this->_header();
+        echo view('basic/notice_list', $viewParams);
+        $this->_footer();
+    }
+
+    function notice_list_data() {
+        // debug($this->Params, $_GET, $_POST);
+        $this->Params['rcnt']=$this->paging_rcnt;
+        $viewParams=$this->Params;
+        $rows=$this->basic_model->getNoticeList($this->Params);
+        unset($this->Params['page']);
+        $totCnt=$this->basic_model->getNoticeList($this->Params);
+        $viewParams['totCnt']=$totCnt;
+        $viewParams['rows']=$rows;
+        $viewParams['num'] = $totCnt - (($viewParams['page']-1)*$viewParams['rcnt']);
+        $viewParams['setting']=$this->setting;
+        $listHtml=view('basic/notice_list_data', $viewParams);
+        echo json_encode(array('totCnt'=>$totCnt, 'rcnt'=>$viewParams['rcnt'], 'page'=>$viewParams['page'], 'html'=>$listHtml));
+    }
+
+    function notice_form() {
+        $row=array();
+        if($this->Params['pid']) $row=$this->board_model->find($this->Params['pid'])->first();
+        $viewParams['row']=$row;
+        $this->_header();
+        echo view('basic/notice_form', $viewParams);
+        $this->_footer();
+    }
+
+    function file_download() {
+        $filepath=decryptURL($this->Params['filepath']);
+        $filename=$this->Params['file_name'];
+        header("Cache-Control: public");
+        header("Content-Description: File Transfer");
+        header("Content-Disposition: attachment; filename=$filename");
+        header("Content-Type: mime/type");
+        header("Content-Transfer-Encoding: binary");
+        // UPDATE: Add the below line to show file size during download.
+        header('Content-Length: ' . filesize($filepath));
+
+        readfile($filepath);
+        exit;
     }
 
 }

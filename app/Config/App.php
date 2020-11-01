@@ -180,14 +180,16 @@ class App extends BaseConfig
 	| Other session cookie settings are shared with the rest of the application,
 	| except for 'cookie_prefix' and 'cookie_httponly', which are ignored here.
 	|
-	*/
-	public $sessionDriver            = 'CodeIgniter\Session\Handlers\FileHandler';
-	public $sessionCookieName        = 'ci_session';
+    */
+    
+
+    public $sessionDriver            = 'CodeIgniter\Session\Handlers\DatabaseHandler';
+	public $sessionCookieName        = 'isup_sessions';
 	public $sessionExpiration        = 7200;
-	public $sessionSavePath          = WRITEPATH . 'session';
+	public $sessionSavePath          = 'isup_sessions';
 	public $sessionMatchIP           = false;
 	public $sessionTimeToUpdate      = 300;
-	public $sessionRegenerateDestroy = false;
+    public $sessionRegenerateDestroy = false;
 
 	/*
 	|--------------------------------------------------------------------------

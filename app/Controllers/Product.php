@@ -167,18 +167,14 @@ class Product extends BaseController
             // exit;
             if($_FILES['file_pd_img']['name']) {
                 $file_title="상품이미지";
-                if($_FILES['file_pd_img']['error']>0) {
-                    $Scripts[] = "parent.alertBox('[".$file_title." 오류] 파일 업로드시 오류가 발생하였습니다.(".$_FILES['file_pd_img']['error'].")', parent.gcUtil.loader, 'hide')";
+                $upFile=getAWSFileName($_FILES['file_pd_img']['name']);
+                if($upFile['err_msg']) {
+                    $Scripts[] = "parent.alertBox('[".$file_title." 오류] 파일 업로드시 오류가 발생하였습니다.(".$upFile['err_msg'].")', parent.gcUtil.loader, 'hide')";
                     jsExecute($Scripts);
                     exit;
                 }
-                $res=$file_uploader->fileImgUpload($_FILES['file_pd_img'], $file_title, true);
-                if($res['status']<0) {
-                    $Scripts[] = "parent.alertBox('[".$file_title." 오류] ".$res['msg']."', parent.gcUtil.loader, 'hide')";
-                    jsExecute($Scripts);
-                    exit;
-                }
-                $queryData['pd_img']=$res['file_name'];
+                $result=s3_upload($_FILES['file_pd_img']['tmp_name'],  $upFile['file']);
+                $queryData['pd_img']=$upFile['file'];
             }
             else {
                 if(!$this->Params['pd_pid']) {

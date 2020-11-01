@@ -9,6 +9,7 @@
         <link rel="stylesheet" type="text/css" href="<?=CSS_DIR?>/jquery.modal.css">        
 		<link rel="stylesheet" type="text/css" href="<?=CSS_DIR?>/multiple-select.css">
         <link rel="stylesheet" type="text/css" href="<?=CSS_DIR?>/select2.min.css">
+        <link rel="stylesheet" type="text/css" href="<?=LIB_DIR?>/font-awesome/css/font-awesome.min.css">
         <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css">
 		<link rel="stylesheet" type="text/css" href="<?=CSS_DIR?>/common.css?ver=<?=$tDate?>">
 		

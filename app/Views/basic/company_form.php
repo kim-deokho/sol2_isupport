@@ -43,7 +43,7 @@
                         <th>업체로고<br />(투명(PNG)이미지 300&times;100 권장)</th>
                         <td>
                             <div class="logo_photo_reg">
-                                <div class="lpr_photo"><img src="<?=$row['com_logo']?$row['com_logo']:IMG_DIR.'/logo_photo.jpg'?>" id="logo_prev" alt="logo" /></div>
+                                <div class="lpr_photo"><img src="<?=$row['com_logo']?AWS_UPLOAD_HOST.$row['com_logo']:IMG_DIR.'/logo_photo.jpg'?>" id="logo_prev" alt="logo" /></div>
                                 <div class="lpr_button">
                                     <div><button type="button" class="bt_white_bor find_file" data-target="file_com_logo">찾아보기</button></div>
                                     <div><button type="button" class="bt_text del_file"  data-prev="logo_prev" data-empty="<?=IMG_DIR?>/logo_photo.jpg" data-input="file_com_logo">삭제</button></div>                                                                                
@@ -54,7 +54,7 @@
                         <th>업체도장<br />(투명(PNG)이미지 150&times;150 권장)</th>
                         <td>
                             <div class="stamp_photo_reg">
-                                <div class="lpr_photo"><img src="<?=$row['com_seal']?$row['com_seal']:IMG_DIR.'/stamp_photo.jpg'?>" id="stamp_prev" alt="stamp" /></div>
+                                <div class="lpr_photo"><img src="<?=$row['com_seal']?AWS_UPLOAD_HOST.$row['com_seal']:IMG_DIR.'/stamp_photo.jpg'?>" id="stamp_prev" alt="stamp" /></div>
                                 <div class="lpr_button">
                                     <div><button type="button" class="bt_white_bor find_file" data-target="file_com_seal">찾아보기</button></div>
                                     <div><button type="button" class="bt_text del_file" data-prev="stamp_prev" data-empty="<?=IMG_DIR?>/stamp_photo.jpg" data-input="file_com_seal">삭제</button></div>                                                                                

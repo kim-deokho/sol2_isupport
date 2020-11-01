@@ -17,6 +17,8 @@ namespace App\Controllers;
 use CodeIgniter\Controller;
 use App\Models\CommonModel;
 
+include_once ROOTPATH.'inc/s3.lib.php';
+
 class BaseController extends Controller
 {
 
@@ -90,6 +92,8 @@ class BaseController extends Controller
         define('LIB_DIR', '/assets/lib');
 		define('UPLOAD_HOST', $site_host);
         define('UPLOAD_DIR', $upload_dir);
+        define('AWS_UPLOAD_HOST', 'https://isupport.kr.object.ncloudstorage.com/');
+        define('AWS_UPLOAD_DIR', 'upload/'.$pk_name);
         define('EDITOR_DIR', 'SE2');	// 에디터 (SE2, smarteditor2)
         
         define('BASE64_CHARS', '+/0123456789=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz');
@@ -125,159 +129,5 @@ class BaseController extends Controller
 		echo view('_footer', $viewParams);
 	}
 
-    function _loadInfo($params=array()) {
-		$arrNavi=array();
-        $_uri=array();
-		$e_uri=explode('?', $_SERVER['REQUEST_URI']);
-		$exp_uri = explode('/', $e_uri[0]);
-		foreach($exp_uri as $i=>$uri) {
-			preg_match('/(.*)\?.*/i', $uri, $match);
-			if(empty($uri) || $match[0]) continue;
-			$_uri[] = empty($match[1]) ? $uri : $match[1];
-        }
-        $this->setting['_uri']=$_uri;
-        // 관리자 로그인 접속가능영역
-        if($this->session->userdata('ss_mb_level')) {
-            if(!in_array($_uri[0], array('manager', 'member'))) {
-                redirect(link_url('/manager'));
-                exit;
-            }
-        }
-        
-        
-		// Title
-		foreach($arrNavi as $m=>$s) {
-			if($m==$_uri[0]) {
-				$active['name'] = $m;
-				$active['navi']=array('link'=>$m, 'name'=>$s['title']);
-				foreach((array)$s['link'] as $link=>$info) {
-					$sub_uri = $_uri[1];
-					if($link==$sub_uri) {
-						$active['sub'] = $link;
-						$active['navi']['link'] .= '::'.$link;
-						$active['navi']['name'] .= '::'.$info['text'];
-						break;
-					}
-				}
-				break;
-			}
-		}
-		$this->setting['Title'] = $this->config->item('site_name_kr').' '.$active['navi']['name'].' - '.$_SERVER['DOCUMENT_TITLE'];
-
-		/*------------------------------------
-		cmd별 자동 JS / CSS 로드
-		------------------------------------*/
-		/*
-		추가 JS or CSS 파일
-		*/
-		$addFile=array(
-			'default'=>array(
-				'js'=>array('lang/'.$this->config->item('language').'/global', 'util', 'default')
-            )
-            ,'before'=>array(
-				'js'=>array(
-                    array('cmd'=>'mypage/room_deposit_payment_form', 'name'=>'payment', 'dir'=>JS_DIR.'/order')
-                    ,array('cmd'=>'order/goods_payment', 'name'=>'payment', 'dir'=>JS_DIR.'/order')
-                )
-            )
-            ,'after'=>array(
-                'css'=>array(
-                    array('cmd'=>'manager', 'name'=>'manager.custom', 'dir'=>'')
-                )
-            )
-        );
-        //if($params['view_target']=='iframe') unset($addFile['before']);
-		$subSite=array('mypage', 'order');
-
-		# 기본
-		$addJS = array();$addCSS=array();
-		if($addFile['default']) {
-			foreach($addFile['default'] as $key=>$value) {
-				foreach($value as $info) {
-					$File = $this->_checkFile($info, $key);
-					if($File) {						
-						${add.strtoUpper($key)} = array_merge(${add.strtoUpper($key)}, $File);
-					}
-				}
-			}
-        }
-
-		if($addFile['before']) {
-			foreach($addFile['before'] as $key=>$value) {
-				foreach($value as $info) {
-					if(in_array($_uri[0], $subSite)) {
-						if($info['cmd']!=$_uri[0] && $info['cmd']!=$_uri[0].'/'.$_uri[1] && $info['cmd']!=$_uri[0].'/'.$_uri[1].'/'.$_uri[2]) continue;
-					} else {
-						if(!in_array($info['cmd'], $_uri)) continue;
-                    }
-
-
-					if($info['dir']!='web') {
-						$File = $this->_checkFile($info['name'], $key, $info['dir']);
-						if($File) {							
-							${add.strtoUpper($key)} = array_merge(${add.strtoUpper($key)}, $File);
-						}
-					} else {
-                        
-						/* 해당 디렉토리 파일존재유무 따지지않음 */
-						${add.strtoUpper($key)} = array_merge(${add.strtoUpper($key)}, array($info['name']));
-					}
-				}
-			}
-		}
-
-		foreach($_uri as $name) {
-			$fileNames[] = $name;
-			$jsFile = $this->_checkFile($fileNames, 'js');			
-			$cssFile = $this->_checkFile($fileNames, 'css');
-			if($jsFile) $addJS = array_merge($addJS, $jsFile);
-			if($cssFile) $addCSS = array_merge($addCSS, $cssFile);
-		}
-		
-
-		if($addFile['after']) {
-			foreach($addFile['after'] as $key=>$value) {
-				foreach($value as $info) {
-					if(!in_array($info['cmd'], $_uri)) continue;
-					if($info['dir']!='web') {
-						$File = $this->_checkFile($info['name'], $key, $info['dir']);
-						if($File) ${add.strtoUpper($key)} = array_merge(${add.strtoUpper($key)}, $File);
-					} else {
-						/* 해당 디렉토리 파일존재유무 따지지않음 */
-						${add.strtoUpper($key)} = array_merge(${add.strtoUpper($key)}, array($info['name']));
-					}
-				}
-			}
-        }
-        
-        if(!$_uri) {
-            $addJS[]=JS_DIR.'/ctr_reservation.js';
-            $addJS[]=JS_DIR.'/main.js';
-            $addCSS[]=CSS_DIR.'/main.css';
-        }
-        $this->addFile = array('JS'=>$addJS, 'CSS'=>$addCSS);
-	}
-
-	function _checkFile($files, $ext='js', $dir='') {
-		$rootDir = $_SERVER['DOCUMENT_ROOT'];
-		if($ext=='js') $defaultDir = $dir ? $dir : JS_DIR;
-		else if($ext=='css') $defaultDir = $dir ? $dir : CSS_DIR;
-		
-
-		$addFile=$langFile=array();
-		if(is_array($files)) {
-			$filePath = $rootDir.$defaultDir;
-			$file = '/'.implode('/', $files);
-			if($ext=='js') if(file_exists($filePath.'/lang/'.$this->config->item('language').$file.'.'.$ext)) $langFile[] =$defaultDir.'/lang/'.$this->config->item('language').$file.'.'.$ext;
-			if(file_exists($filePath.$file.'.'.$ext)) $addFile[] =$defaultDir.$file.'.'.$ext;
-		} else {
-			$filePath = $rootDir.$defaultDir;
-			$file = '/'.$files;
-			if($ext=='js') if(file_exists($filePath.'/lang/'.$this->config->item('language').$file.'.'.$ext)) $langFile[] = $defaultDir.'/lang/'.$this->config->item('language').$file.'.'.$ext;
-			if(file_exists($filePath.$file.'.'.$ext)) $addFile[] = $defaultDir.$file.'.'.$ext;
-		}
-		$includeFile = array_merge($langFile, $addFile);
-		return $includeFile ? $includeFile : false;
-    }
 
 }

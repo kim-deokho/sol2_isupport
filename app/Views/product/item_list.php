@@ -112,7 +112,7 @@ function popProductFrm(pid) {
                     $('#regFrm #old_in_price').val(resJson.pd_in_price);
                     $('#regFrm #pd_code').prop('disabled', true);
                     // 이미지
-                    $('#p_img_prev').attr('src', resJson.pd_img);
+                    $('#p_img_prev').attr('src', '<?=AWS_UPLOAD_HOST?>'+resJson.pd_img);
                     // number_format Set
                     $('.input-comma').each(function(){
                         $(this).val(inputNumberWithComma($(this).val()));
