@@ -9,6 +9,11 @@ use App\Models\PeraddModel;
 use App\Models\CompanyModel;
 use App\Models\TraderModel;
 use App\Models\BoardModel;
+use App\Models\ConfigModel;
+use App\Models\MemberLevelModel;
+use App\Models\GiftModel;
+use App\Models\ChargeModel;
+use App\Models\PcmanageModel;
 
 use App\Libraries\Fileuploader;
 use App\Libraries\Fixcodes;
@@ -29,7 +34,12 @@ class Basic extends BaseController
         $this->company_model = new CompanyModel();
         $this->board_model = new BoardModel();
         $this->fix_codes = new Fixcodes();
-        
+		$this->config_model = new ConfigModel();
+		$this->mlevel_model = new MemberLevelModel();
+		$this->gift_model = new GiftModel();
+		$this->dcharge_model = new ChargeModel();
+		$this->pcmanage_model = new PcmanageModel();
+
         //부서
         if(!$this->setting['code']['Departments']) $this->setting['code']['Departments']=$this->common_model->getCodeData(array('p_cd_code'=>'0101', 'returnType'=>'pid'));
         //직위
@@ -47,12 +57,12 @@ class Basic extends BaseController
         $link=ManagerDefaultLink($this->session->get('menu'));
         return redirect()->to($link);
     }
-    
-    function manager_list() {    
+
+    function manager_list() {
         $viewParams=$this->Params;
         $viewParams['setting']=$this->setting;
         $viewParams['permainRows']=$this->permain_model->findAll();
-       
+
         $this->_header();
         echo view('basic/manager_list', $viewParams);
         $this->_footer();
@@ -118,7 +128,7 @@ class Basic extends BaseController
             'M' => array(20, 'm_out_date', '퇴사일')
         );
 
-        
+
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -196,6 +206,15 @@ class Basic extends BaseController
             $notice=$this->board_model->find($this->Params['pid']);
             echo json_encode($notice);
         }
+		else if($this->Params['mode']=='get_gift') {  // 상품권 정보가져오기
+            $notice=$this->gift_model->find($this->Params['gt_pid']);
+            echo json_encode($notice);
+        }
+		else if($this->Params['mode']=='get_dcharge_list') {   // 배송비 리스트 가져오기
+            $rows=$this->dcharge_model->where('dc_del', 'N')->where('dc_kind',$this->Params['kind'])->findAll();
+            $viewParams['rows']=$rows;
+            echo view('basic/pop_direct_cost_data', $viewParams);
+        }
     }
 
     function execute() {
@@ -215,7 +234,7 @@ class Basic extends BaseController
             if(!$this->Params['mn_pid']) {
                 $RegData['mn_pw']=$this->auth_model->sql_password($this->Params['pwd']);
                 $insert_id=$this->manager_model->insert($RegData);
-                
+
                 $upData=array('mn_no'=>$this->common_model->makeMnNo());
                 $this->manager_model->update($insert_id, $upData);
             }
@@ -248,9 +267,9 @@ class Basic extends BaseController
                 $existRow=array();
                 foreach($menu['sub'] as $sub_menu) {
                     $data=array('bn_pid'=>$this->Params['bn_pid'], 'mu_pid'=>$sub_menu['pid'], 'ba_access'=>'N', 'ba_save'=>'N', 'ba_del'=>'N', 'ba_print'=>'N', 'ba_excel'=>'N');
-                    
+
                     $existRow=$this->persub_model->where(array('bn_pid'=>$this->Params['bn_pid'], 'mu_pid'=>$sub_menu['pid']))->first();
-                    
+
                     if(isset($ChkPermition[$sub_menu['pid']]['access'])) $data['ba_access']='Y';
                     if(isset($ChkPermition[$sub_menu['pid']]['save'])) $data['ba_save']='Y';
                     if(isset($ChkPermition[$sub_menu['pid']]['del'])) $data['ba_del']='Y';
@@ -258,7 +277,7 @@ class Basic extends BaseController
                     if(isset($ChkPermition[$sub_menu['pid']]['excel'])) $data['ba_excel']='Y';
                     // debug($data, $ChkPermition[$sub_menu['pid']]['access'], $sub_menu, $ChkPermition);
                     // exit;
-                    
+
                     if($existRow['ba_pid']) {
                         if($data['ba_access']!=$exist['ba_access'] || $data['ba_save']!=$exist['ba_save'] || $data['ba_del']!=$exist['ba_del'] || $data['ba_print']!=$exist['ba_print'] || $data['ba_excel']!=$exist['ba_excel']) {
                             $data['up_id']=$this->session->get('ss_mn_pid');
@@ -280,9 +299,9 @@ class Basic extends BaseController
                 $existRow=array();
                 foreach($menu['sub'] as $sub_menu) {
                     $data=array('mn_pid'=>$this->Params['mn_pid'], 'mu_pid'=>$sub_menu['pid'], 'aa_access'=>'N', 'aa_save'=>'N', 'aa_del'=>'N', 'aa_print'=>'N', 'aa_excel'=>'N');
-                    
+
                     $existRow=$this->peradd_model->where(array('mn_pid'=>$this->Params['mn_pid'], 'mu_pid'=>$sub_menu['pid']))->first();
-                    
+
                     if(isset($ChkPermition[$sub_menu['pid']]['access'])) $data['aa_access']='Y';
                     if(isset($ChkPermition[$sub_menu['pid']]['save'])) $data['aa_save']='Y';
                     if(isset($ChkPermition[$sub_menu['pid']]['del'])) $data['aa_del']='Y';
@@ -290,7 +309,7 @@ class Basic extends BaseController
                     if(isset($ChkPermition[$sub_menu['pid']]['excel'])) $data['aa_excel']='Y';
                     // debug($data, $ChkPermition[$sub_menu['pid']]['access'], $sub_menu, $ChkPermition);
                     // exit;
-                    
+
                     if($existRow['aa_pid']) {
                         if($data['aa_access']!=$exist['aa_access'] || $data['aa_save']!=$exist['aa_save'] || $data['aa_del']!=$exist['aa_del'] || $data['aa_print']!=$exist['aa_print'] || $data['aa_excel']!=$exist['aa_excel']) {
                             $data['up_id']=$this->session->get('ss_mn_pid');
@@ -309,7 +328,7 @@ class Basic extends BaseController
             // ini_set('memory_limit','-1');
             $file_uploader = new Fileuploader();
             $dataParams=$this->Params;
-            
+
             // 업체로고 이미지
             if($_FILES['file_com_logo']['name']) {
                 $file_title="업체로고";
@@ -324,6 +343,7 @@ class Basic extends BaseController
                 // exit;
                 $dataParams['com_logo']=$upFile['file'];
             }
+            else if($this->Params['file_com_logo_del']=='Y') $dataParams['com_logo']='';
 
             // 업체도장이미지
             if($_FILES['file_com_seal']['name']) {
@@ -337,6 +357,8 @@ class Basic extends BaseController
                 $result=s3_upload($_FILES['file_com_seal']['tmp_name'],  $upFile['file']);
                 $dataParams['com_seal']=$upFile['file'];
             }
+            else if($this->Params['file_com_seal_del']=='Y') $dataParams['com_seal']='';
+
             $target_query_id='reg_id';
             if($this->Params['com_pid']) $target_query_id='up_id';
             $dataParams[$target_query_id]=$this->session->get('ss_mn_pid');
@@ -363,7 +385,7 @@ class Basic extends BaseController
             $this->Params['mn_pid']=$this->session->get('ss_mn_pid');
             if($this->Params['cd_pid']) {
                 $this->common_model->UpdateCodeData($this->Params, array('cd_pid'=>$this->Params['cd_pid']));
-                
+
             }
             else {
                 $this->common_model->InsertCodeData($this->Params);
@@ -483,7 +505,106 @@ class Basic extends BaseController
             }
             echo json_encode($result);
         }
-        
+		else if($this->Params['mode']=='reg_config') {  // 기본정책 저장
+			$RegData=$this->Params;
+
+			$RegData['cf_point_basic']=str_replace(',', '', $RegData['cf_point_basic']);
+			$RegData['cf_point_use_price']=str_replace(',', '', $RegData['cf_point_use_price']);
+			$RegData['cf_point_min_price']=str_replace(',', '', $RegData['cf_point_min_price']);
+			$RegData['cf_delivery_charge_basic']=str_replace(',', '', $RegData['cf_delivery_charge_basic']);
+
+			if($this->Params['ckmode'] == 'cf7') {
+				$RegData['cf_order_deposit_use'] = $RegData['cf_order_deposit_use'] == 'Y' ? 'Y' : 'N';
+				$RegData['cf_exchange_deposit_use'] = $RegData['cf_exchange_deposit_use'] == 'Y' ? 'Y' : 'N';
+				$RegData['cf_order_approval_use'] = $RegData['cf_order_approval_use'] == 'Y' ? 'Y' : 'N';
+				$RegData['cf_exchange_approval_use'] = $RegData['cf_exchange_approval_use'] == 'Y' ? 'Y' : 'N';
+				$RegData['cf_order_admin_use'] = $RegData['cf_order_admin_use'] == 'Y' ? 'Y' : 'N';
+			}
+			$RegData['up_id']=$this->session->get('ss_mn_pid');
+			$this->config_model->update('1', $RegData);
+
+			if(count($this->Params['ml_name']) > 0) {
+				for($i=0;$i<count($this->Params['ml_name']);$i++) {
+					$RegData2['ml_name'] = $this->Params['ml_name'][$i];
+					$RegData2['ml_min'] = $this->Params['ml_min'][$i];
+					$RegData2['ml_max'] = $this->Params['ml_max'][$i];
+					$RegData2['ml_add_point'] = $this->Params['ml_add_point'][$i];
+					$RegData2['ml_auto'] = $this->Params['ml_auto'][$i];
+					$RegData2['ml_use'] = $this->Params['ml_use'][$i];
+					if($this->Params['ml_pid'][$i]) {
+						$RegData2['up_id']=$this->session->get('ss_mn_pid');
+						$this->mlevel_model->update($this->Params['ml_pid'][$i], $RegData2);
+					} else {
+						$RegData2['reg_id']=$this->session->get('ss_mn_pid');
+						$this->mlevel_model->insert($RegData2);
+					}
+				}
+			}
+
+			$Scripts[] = "parent.alertBox('정상처리되었습니다.', parent.location.reload())";
+            jsExecute($Scripts);
+		}
+		else if($this->Params['mode']=='del_level') { //회원 레벨 삭제
+			$RegData['ml_del'] = 'Y';
+			$RegData['up_id']=$this->session->get('ss_mn_pid');
+			$this->mlevel_model->update($this->Params['ml_pid'], $RegData);
+
+			$result['msg']="삭제되었습니다.";
+
+			echo json_encode($result);
+		}
+		else if($this->Params['mode']=='reg_gift') {  // 상품권 저장
+			$RegData=$this->Params;
+
+			if($this->Params['gt_pid']) {
+				$RegData['up_id']=$this->session->get('ss_mn_pid');
+				$this->gift_model->update($this->Params['gt_pid'], $RegData);
+			} else {
+				$RegData['reg_id']=$this->session->get('ss_mn_pid');
+				$this->gift_model->insert($RegData);
+			}
+
+
+			$Scripts[] = "parent.alertBox('정상처리되었습니다.', parent.location.reload())";
+            jsExecute($Scripts);
+		}
+		else if($this->Params['mode']=='del_gift') {  // 상품권 삭제
+			$RegData['gt_del'] = 'Y';
+			$RegData['up_id']=$this->session->get('ss_mn_pid');
+			$this->gift_model->update($this->Params['gt_pid'], $RegData);
+
+
+			$result['msg']="삭제되었습니다.";
+
+			echo json_encode($result);
+		}
+		else if($this->Params['mode']=='reg_dcharge') { //배송비 설정
+			$RegData=$this->Params;
+
+			$RegData['dc_delivery_charge'] = str_replace(',', '', $RegData['dc_delivery_charge']);
+			$RegData['dc_delivery_charge_cnt'] = str_replace(',', '', $RegData['dc_delivery_charge_cnt']);
+
+			if($this->Params['dc_pid']) {
+				$RegData['up_id']=$this->session->get('ss_mn_pid');
+				$this->dcharge_model->update($this->Params['dc_pid'], $RegData);
+			} else {
+				$RegData['reg_id']=$this->session->get('ss_mn_pid');
+				$this->dcharge_model->insert($RegData);
+			}
+			$Scripts[] = "parent.alertBox('정상처리되었습니다.', parent.dCharge_list, '".$this->Params['dc_kind']."')";
+            jsExecute($Scripts);
+		}
+		else if($this->Params['mode']=='del_dcharge') {  // 배송비 삭제
+			$RegData['dc_del'] = 'Y';
+			$RegData['up_id']=$this->session->get('ss_mn_pid');
+			$this->dcharge_model->update($this->Params['dc_pid'], $RegData);
+
+
+			$result['msg']="삭제되었습니다.";
+
+			echo json_encode($result);
+		}
+
     }
 
     function company_form() {
@@ -534,13 +655,13 @@ class Basic extends BaseController
         $this->_footer();
     }
 
-    function trader_list() {    
+    function trader_list() {
         $viewParams=$this->Params;
         //매출처
         $this->setting['code']['OutKind']=$this->common_model->getCodeData(array('p_cd_code'=>'0104', 'returnType'=>'pid'));
         $viewParams['setting']=$this->setting;
         $viewParams['fix_codes']=$this->fix_codes;
-       
+
         $this->_header();
         echo view('basic/trader_list', $viewParams);
         $this->_footer();
@@ -566,12 +687,12 @@ class Basic extends BaseController
 
     }
 
-    function notice_list() {    
+    function notice_list() {
         $viewParams=$this->Params;
         $viewParams['sdate']=$this->Params['sdate']?$this->Params['sdate']:date('Y').'-01-01';
         $viewParams['edate']=$this->Params['edate']?$this->Params['edate']:date('Y-m-d');
         $viewParams['setting']=$this->setting;
-       
+
         $this->_header();
         echo view('basic/notice_list', $viewParams);
         $this->_footer();
@@ -594,11 +715,18 @@ class Basic extends BaseController
 
     function notice_form() {
         $row=array();
-        if($this->Params['pid']) $row=$this->board_model->find($this->Params['pid'])->first();
+        if($this->Params['pid']) $row=$this->board_model->find($this->Params['pid']);
         $viewParams['row']=$row;
         $this->_header();
         echo view('basic/notice_form', $viewParams);
         $this->_footer();
+    }
+
+    function popNoticeViewData() {
+        $row=$this->board_model->find($this->Params['pid']);
+        $viewParams['row']=$row;
+        $viewParams['setting']=$this->setting;
+        echo view('basic/popNoticeViewData', $viewParams);
     }
 
     function file_download() {
@@ -614,6 +742,66 @@ class Basic extends BaseController
 
         readfile($filepath);
         exit;
+    }
+
+	function policys() {
+
+		$viewParams=$this->Params;
+        $viewParams['sdate']=$this->Params['sdate']?$this->Params['sdate']:date('Y').'-01-01';
+        $viewParams['edate']=$this->Params['edate']?$this->Params['edate']:date('Y-m-d');
+        $viewParams['setting']=$this->setting;
+
+		$row = $this->config_model->find(1);
+		$viewParams['row'] = $row;
+
+		$level_rows = $this->mlevel_model->where('ml_del', 'N')->findAll();
+		$viewParams['level_rows'] = $level_rows;
+
+		$gift_rows = $this->gift_model->where('gt_del', 'N')->findAll();
+		$viewParams['gift_rows'] = $gift_rows;
+
+		$dcharge_rows = $this->dcharge_model->where('dc_del', 'N')->findAll();
+		$viewParams['dcharge_rows'] = $dcharge_rows;
+
+        $this->_header();
+        echo view('basic/policys', $viewParams);
+        $this->_footer();
+
+	}
+
+	function promotion_list() {
+        $viewParams=$this->Params;
+        $viewParams['sdate']=$this->Params['sdate']?$this->Params['sdate']:date('Y').'-01-01';
+        $viewParams['edate']=$this->Params['edate']?$this->Params['edate']:date('Y-m-d');
+        $viewParams['setting']=$this->setting;
+
+		$options['page'] = '1';
+		$options['rcnt'] = '0';
+		$pd_rows = $this->pcmanage_model->getProductList($options);
+
+		$ct_rows=$this->basic_model->getTraderList($options);
+
+		$viewParams['pd_rows']=$pd_rows;
+		$viewParams['ct_rows']=$ct_rows;
+
+        $this->_header();
+        echo view('basic/promotion_list', $viewParams);
+        $this->_footer();
+    }
+
+    function promotion_list_data() {
+        // debug($this->Params, $_GET, $_POST);
+        $this->Params['rcnt']=$this->paging_rcnt;
+        $viewParams=$this->Params;
+        $rows=$this->basic_model->getPromotionList($this->Params);
+        unset($this->Params['page']);
+        $totCnt=$this->basic_model->getPromotionList($this->Params);
+        $viewParams['totCnt']=$totCnt;
+        $viewParams['rows']=$rows;
+        $viewParams['num'] = $totCnt - (($viewParams['page']-1)*$viewParams['rcnt']);
+        $viewParams['setting']=$this->setting;
+        $listHtml=view('basic/promotion_list_data', $viewParams);
+        echo json_encode(array('totCnt'=>$totCnt, 'rcnt'=>$viewParams['rcnt'], 'page'=>$viewParams['page'], 'html'=>$listHtml));
     }
 
 }

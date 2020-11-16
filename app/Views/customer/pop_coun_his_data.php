@@ -19,8 +19,8 @@
             echo '<tr onclick="view_coun(\''.$row['mc_pid'].'\')">';
             echo '  <td>'.$num--.'</td>';
             echo '  <td>'.$row['reg_date'].'</td>';
-            echo '  <td>'.$setting['code']['Telkind1'][$row['mc_kind1']]['cd_name'].'</td>';
-            echo '  <td>'.$setting['code']['Telkind2'][$row['mc_kind2']]['cd_name'].'</td>';
+            echo '  <td>'.$setting['code']['Counkind1'][$row['mc_kind1']]['cd_name'].'</td>';
+            echo '  <td>'.$setting['code']['Counkind2'][$row['mc_kind2']]['cd_name'].'</td>';
             echo '  <td>'.$row['mc_contents'].'</td>';
             echo '  <td>'.$row['mc_tel'].'</td>';
             echo '  <td>'.$setting['code']['Counkind3'][$row['mc_kind3']].'</td>';

@@ -130,7 +130,7 @@ var pt_option;
 			confirmBox("삭제 하시겠습니까?", row_del, {tr:tr});
 		});
 
-
+		sendSearch();
 	}
 	);
 
@@ -184,7 +184,7 @@ var pt_option;
 		$(obj.tr).remove();
 	}
 
-	sendSearch();
+
     // 발주등록
     function purchase_reg(pid){
 		var pid = pid || '';

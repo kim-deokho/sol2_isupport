@@ -19,6 +19,8 @@
 										<option value="mb_code">코드</option>
                                     </select>
                                     <input type="text" name="searchWord" class="mWt300" value="" placeholder="검색어" required />
+									<span>휴먼포함</span>
+                            <label class="chkWrap"><input type="checkbox" name="searchDormant" value="Y" /><i></i></label>
                                     <button type="submit" class="bt_navy ml10" onclick="">조회</button><br />
                                 </div>
 
@@ -217,11 +219,11 @@
 
                                                 <select name="mc_kind1" class="wAuto" required>
 													<option value="">전화종류</option>
-                                                <?foreach($setting['code']['Telkind1'] as $row ) echo '<option value="'.$row['cd_pid'].'">'.$row['cd_name'].'</option>'?>
+                                                <?foreach($setting['code']['Counkind1'] as $row ) echo '<option value="'.$row['cd_pid'].'">'.$row['cd_name'].'</option>'?>
                                                 </select>
                                                 <select name="mc_kind2" class="wAuto" required>
 													<option value="">상담종류</option>
-                                                <?foreach($setting['code']['Telkind2'] as $row ) echo '<option value="'.$row['cd_pid'].'">'.$row['cd_name'].'</option>'?>
+                                                <?foreach($setting['code']['Counkind2'] as $row ) echo '<option value="'.$row['cd_pid'].'">'.$row['cd_name'].'</option>'?>
                                                 </select>
                                                 <select name="mc_kind3" class="wAuto">
                                                     <option value="A">미처리</option>
@@ -421,8 +423,60 @@
 
     // 배송지등록
     function adress_reg(){
-        pop_modal('pop_adress_reg');
+		list_dely()
+		pop_modal('pop_adress_reg');
     }
+
+	//배송지 목록
+	function list_dely() {
+		$("#bsf")[0].reset();
+		$("#dy_pid").val('');
+		gcUtil.loader('show', '#pop_dlist_area');
+		$.ajax({
+			data: {mode:'dely_list',mb_pid:$("input[name='mb_pid']").val()},
+			type: "POST",
+			url: 'ajax_request',
+			cache: false,
+			dataType:'json',
+			success: function(resJson) {
+				// console.log(resJson);
+				gcUtil.loader('hide', '#pop_dlist_area');
+				$('#pop_dlist_area').html(resJson.html);
+
+			}
+		});
+	}
+
+	//배송지 삭제
+	function del_dely(dy_pid) {
+		f = document.forms['bsf'];
+		f.dy_pid.value = dy_pid;
+		f.mode.value = 'del_dely';
+		f.submit();
+		f.mode.value = 'reg_dely';
+
+	}
+
+	//기본배송지 설정
+	function basic_dely(dy_pid) {
+		f = document.forms['bsf'];
+		f.dy_pid.value = dy_pid;
+		f.mode.value = 'basic_dely';
+		f.submit();
+		f.mode.value = 'reg_dely';
+	}
+
+	function view_dely(dy_pid, dy_name, dy_tel1, dy_tel2, dy_post, dy_addr, dy_addr2) {
+		$("#dy_pid").val(dy_pid);
+		$("#dy_name").val(dy_name);
+		$("#dy_tel1").val(dy_tel1);
+		$("#dy_tel2").val(dy_tel2);
+		$("#dy_post").val(dy_post);
+		$("#dy_addr").val(dy_addr);
+		$("#dy_addr2").val(dy_addr2);
+	}
+
+
 
 	// 주문등록
     function order_reg(){
@@ -466,7 +520,7 @@
 			dataType:'json',
 			success: function(resJson) {
 				// console.log(resJson);
-				gcUtil.loader('hide', '#list_area');
+				gcUtil.loader('hide', '#pop_list_area');
 				$('#pop_list_area').html(resJson.html);
 				pop_paging(resJson.totCnt, resJson.page, resJson.rcnt);
 			}

@@ -3,7 +3,7 @@
     <div class="contents">
 <?
         include_once APPPATH.'/Views/_page_path.php';
-?> 
+?>
         <form name="searchFrm" id="searchFrm" method="get" onsubmit="sendSearch(1);return false;">
         <input type="hidden" name="page" id="page" value="<?=$page?>">
         <div class="search_box mt10">
@@ -23,13 +23,13 @@
                 <span class="ml20">구분</span>
                 <select name="search_kind" id="search_kind" class="wAuto">
                     <option value="">전체</option>
-<?                  foreach($setting['code']['ProductKind'] as $info) echo '<option value="'.$info['cd_pid'].'" '.($info['cd_pid']==$search_kind?'selected':'').'>'.$info['cd_name'].'</option>';?>                      
+<?                  foreach($setting['code']['ProductKind'] as $info) echo '<option value="'.$info['cd_pid'].'" '.($info['cd_pid']==$search_kind?'selected':'').'>'.$info['cd_name'].'</option>';?>
                 </select>
             </div> <!-- box_row -->
             <div class="box_row mt10">
                 <span>상품명</span>
                 <select class="multi_select" style="width:auto" name="searchKey[]" id="searchKey" multiple="multiple">
-<?                  foreach(array('pd_name'=>'상품명', 'pd_code'=>'상품코드') as $sk=>$sv) echo '<option value="'.$sk.'">'.$sv.'</option>';?>
+<?                  foreach(array('pd_name'=>'상품명', 'pd_code'=>'상품코드') as $sk=>$sv) echo '<option value="'.$sk.'" selected>'.$sv.'</option>';?>
                 </select>
                 <input type="text" name="searchWord" id="searchWord" class="mWt150" value="<?=$searchWord?>" placeholder="검색어" />
 
@@ -38,7 +38,7 @@
                 <span class="ml20">사용여부</span>
                 <select name="search_use" id="search_use" class="wAuto">
                     <option value="">전체</option>
-<?                  foreach(array('Y', 'N') as $k) echo '<option value="'.$k.'" '.($k==$search_use?'selected':'').'>'.$k.'</option>';?>      
+<?                  foreach(array('Y', 'N') as $k) echo '<option value="'.$k.'" '.($k==$search_use?'selected':'').'>'.$k.'</option>';?>
                 </select>
 
                 <button type="submit" class="bt_navy ml10">조회</button>
@@ -127,7 +127,7 @@ function popProductFrm(pid) {
                     if(resJson.ord_cnt>0) $('#search_bom').prop('disabled', true);
 
                     pop_modal('pop_product_reg');
-                    
+
                     var cate1=resJson.pd_pc_code.substr(0, 3);
                     var cate2=resJson.pd_pc_code.substr(3, 3);
                     var cate3=resJson.pd_pc_code.substr(6, 3);
@@ -160,7 +160,7 @@ function popProductFrm(pid) {
         $('#ct_pid').select2('val', {});
         // BOM 설정 초기화
         $('#tb_bom_list tbody').html('<tr id="tr_no_data"><td colspan="10" class="no_data">등록된 상품이 없습니다.</td></tr>');
-        
+
         pop_modal('pop_product_reg');
 
         // 카테고리 변경가능
@@ -178,6 +178,7 @@ function setBomData(val) {
     pd_code=exp_val[1];
     pd_name=exp_val[2];
     pd_in_price=exp_val[3];
+    pd_out_price=exp_val[4];
 
     if(document.forms['regFrm'].pd_pid.value==pd_pid) {
         alertBox('같은 상품은 등록이 불가능합니다.');
@@ -202,12 +203,12 @@ function setBomData(val) {
     trHtml+='   <td>'+pd_name+'</td>';
     trHtml+='   <td><input type="text" name="Data[cnt][]" onkeyup="inputNumberAutoComma(this)" class="mWt60 h_20 txar bom_products input-comma" data-pid="'+pd_pid+'" value="" /></td>';
     trHtml+='   <td>'+inputNumberWithComma(pd_in_price)+'</td>';
-    trHtml+='   <td><input type="text" name="Data[price][]" onkeyup="inputNumberAutoComma(this)" class="mWt100 h_20 txar input-comma" value="" /></td>';
+    trHtml+='   <td><input type="text" name="Data[price][]" onkeyup="inputNumberAutoComma(this)" class="mWt100 h_20 txar input-comma" value="'+pd_out_price+'" /></td>';
     trHtml+='   <td><button type="button" class="small bt_red js-del-btn" onclick="delBomData(\''+pk_idx+'\')">삭제</button></td>';
     trHtml+='<input type="hidden" name="Data[pd_pid][]" value="'+pd_pid+'">';
     trHtml+='<input type="hidden" name="Data[pb_pid][]"">';
     trHtml+='</tr>';
-    
+
 
     $('#tr_no_data').addClass('d_none');
     $('#tb_bom_list tbody tr:last').after(trHtml);
@@ -246,5 +247,16 @@ function chkDoubleName() {
             alertBox("Double Error!");
         }
     });
+}
+function saveProduct(f) {
+    if(!f.pd_pid.value) {
+        if($('#is_auto').is(':checked')) {
+            confirmBox("상품코드를 '자동'으로 생성시 입력하신 상품코드는 적용되지 않습니다.<br>상품코드를 자동으로 등록하시겠습니까?", 'sendForm', f);
+        }
+    }
+    else sendForm(f);
+}
+function sendForm(f) {
+    f.submit();
 }
 </script>

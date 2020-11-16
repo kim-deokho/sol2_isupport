@@ -60,7 +60,7 @@ class BasicModel extends BaseModel
             return $rows;
 		} else {
 			return $builder->countAllResults();
-		}    
+		}
     }
 
     function getManagerAddPermition($mn_pid) {
@@ -98,7 +98,7 @@ class BasicModel extends BaseModel
             return $rows;
 		} else {
 			return $builder->countAllResults();
-		}    
+		}
     }
 
     function getNoticeList($options) {
@@ -125,7 +125,30 @@ class BasicModel extends BaseModel
             return $rows;
 		} else {
 			return $builder->countAllResults();
-		}    
+		}
     }
-    
+
+	function getPromotionList($options) {
+        // debug($options);
+        $builder = $this->dDB->table('tb_promotion');
+        $builder->where('pm_del','N');
+
+        if($options['searchWord']) {
+            $builder->like('bd_title', $options['searchWord']);
+        }
+        if($options['page'] > 0) {
+            $order=$options['order']?$options['order']:'pm_pid';
+            $sort=$options['sort']?$options['sort']:'desc';
+			$builder->orderBy($order, $sort);
+			if($options['rcnt'] > 0) {
+				$snum = ($options['page']-1)*$options['rcnt'];
+				$builder->limit($options['rcnt'], $snum);
+            }
+            $rows = $builder->get()->getResultArray();
+            // debug($options, $this->dDB->getLastQuery());
+            return $rows;
+		} else {
+			return $builder->countAllResults();
+		}
+    }
 }

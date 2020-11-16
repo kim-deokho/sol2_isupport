@@ -81,7 +81,7 @@
 
 		<div class="buttonCenter mt20">
 			<a href="#" rel="modal:close"><button type="button" class="bt_150_40 bt_gray modal_close" onclick="">취소</button></a>
-			<button type="button" class="bt_150_40 bt_black ml5" onclick="">저장</button>
+			<button type="button" class="bt_150_40 bt_black ml5 js-save-btn" onclick="">저장</button>
 		</div> <!-- buttonCenter -->
 	</div> <!-- modal_contents -->
 </div> <!-- modal -->

@@ -17,7 +17,7 @@ a:hover {color:#000;}
 img {vertical-align: middle;}
 .wAuto {width: auto !important;}
 .vam_dib {vertical-align: middle !important;display: inline-block !important;}
-
+.d_none_no_im {display: none ;}
 /* hr */
 hr.hr_base {width:100%;height:1px;border:0;background-color: #c9c9cb;}
 

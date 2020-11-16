@@ -27,13 +27,13 @@
 				<span>인/아웃</span>
 				<select name="searchkind1" class="wAuto">
 					<option value="">전체</option>
-					<?foreach($setting['code']['Telkind1'] as $row ) echo '<option value="'.$row['cd_pid'].'">'.$row['cd_name'].'</option>'?>
+					<?foreach($setting['code']['Counkind1'] as $row ) echo '<option value="'.$row['cd_pid'].'">'.$row['cd_name'].'</option>'?>
 				</select>
 
 				<span class="ml20">상담종류</span>
 				<select name="searchkind2" class="wAuto">
 					<option value="">전체</option>
-					<?foreach($setting['code']['Telkind2'] as $row ) echo '<option value="'.$row['cd_pid'].'">'.$row['cd_name'].'</option>'?>
+					<?foreach($setting['code']['Counkind2'] as $row ) echo '<option value="'.$row['cd_pid'].'">'.$row['cd_name'].'</option>'?>
 				</select>
 
 				<span class="ml20">처리상태</span>
@@ -92,7 +92,7 @@
 								<th class="mWt60">인/아웃</th>
 								<td>
 									<select name="mc_kind1" id="mc_kind1" class="wAuto">
-										<?foreach($setting['code']['Telkind1'] as $row ) echo '<option value="'.$row['cd_pid'].'">'.$row['cd_name'].'</option>'?>
+										<?foreach($setting['code']['Counkind1'] as $row ) echo '<option value="'.$row['cd_pid'].'">'.$row['cd_name'].'</option>'?>
 									</select>
 								</td>
 							</tr>
@@ -100,7 +100,7 @@
 								<th>상담종류</th>
 								<td>
 									<select name="mc_kind2" id="mc_kind2" class="wAuto">
-										<?foreach($setting['code']['Telkind2'] as $row ) echo '<option value="'.$row['cd_pid'].'">'.$row['cd_name'].'</option>'?>
+										<?foreach($setting['code']['Counkind2'] as $row ) echo '<option value="'.$row['cd_pid'].'">'.$row['cd_name'].'</option>'?>
 									</select>
 								</td>
 								<th>처리상태</th>

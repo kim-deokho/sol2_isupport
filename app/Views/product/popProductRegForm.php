@@ -14,7 +14,7 @@
 	</div> <!-- modal_header -->
 
 	<div class="modal_contents">
-        <form name="regFrm" id="regFrm" method="post" target="hiddenFrame"  enctype="multipart/form-data" autocomplete="off" action="/product/execute" >
+        <form name="regFrm" id="regFrm" method="post" target="hiddenFrame"  enctype="multipart/form-data" autocomplete="off" action="/product/execute" onsubmit="saveProduct(this);return false;">
         <input type="hidden" name="mode" id="mode" value="reg_product">
         <input type="hidden" name="pd_pid" id="pd_pid">
         <input type="hidden" name="is_double" id="is_double">
@@ -25,7 +25,7 @@
 					<tr>
 						<th class="mWt100">상품코드</th>
 						<td class="mWt360"><input type="text" name="pd_code" id="pd_code" class="mWt200" value=""/>
-						<label class="chkWrap ml10" id="label_is_auto"><input type="checkbox" name="is_auto" value="Y" /><i></i><span>자동</span></label></td>
+						<label class="chkWrap ml10" id="label_is_auto"><input type="checkbox" name="is_auto" value="Y" checked /><i></i><span>자동</span></label></td>
 						<th class="mWt100">등록일</th>
 						<td><span id="reg_update"></span></td>
 					</tr>
@@ -154,7 +154,7 @@
 						<td>
                             <select class="js-single-selector" name="search_bom" id="search_bom" onchange="setBomData(this.value)" style="width:100%;">
                                 <option value="">-- 선택 --</option>
-<?                              foreach($productRows as $p_row) echo '<option value="'.$p_row['pd_pid'].'|@|'.$p_row['pd_code'].'|@|'.$p_row['pd_name'].'|@|'.$p_row['pd_in_price'].'">'.$p_row['pd_name'].'&nbsp;&nbsp;&nbsp;( '.$p_row['pd_code'].' )</option>';?>
+<?                              foreach($productRows as $p_row) echo '<option value="'.$p_row['pd_pid'].'|@|'.$p_row['pd_code'].'|@|'.$p_row['pd_name'].'|@|'.$p_row['pd_in_price'].'|@|'.$p_row['pd_out_price'].'">'.$p_row['pd_name'].'&nbsp;&nbsp;&nbsp;( '.$p_row['pd_code'].' )</option>';?>
                             </select>
 						</td>
 					</tr>							
@@ -186,7 +186,7 @@
 
 		<div class="buttonCenter mt20">
 			<a href="#" rel="modal:close"><button type="button" class="bt_150_40 bt_gray modal_close" onclick="">취소</button></a>
-			<button type="submit" class="bt_150_40 bt_black ml5">저장</button>
+			<button type="submit" class="bt_150_40 bt_black ml5 js-save-btn">저장</button>
 		</div> <!-- buttonCenter -->
 	</div> <!-- modal_contents -->
     </form>

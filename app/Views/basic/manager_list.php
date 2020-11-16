@@ -2,7 +2,7 @@
     <div class="contents">
 <?
         include_once APPPATH.'/Views/_page_path.php';
-?>    
+?>
         <div class="search_box mt10">
             <div class="box_row">
                 <form name="searchFrm" id="searchFrm" method="get" onsubmit="sendSearch(1);return false;">
@@ -10,16 +10,16 @@
                 <span>부서</span>
                 <select name="department" id="department" class="wAuto">
                     <option value="">전체</option>
-<?                  foreach($setting['code']['Departments'] as $part) echo '<option value="'.$part['cd_pid'].'" '.($part['cd_pid']==$department?'selected':'').'>'.$part['cd_name'].'</option>';?>                    
+<?                  foreach($setting['code']['Departments'] as $part) echo '<option value="'.$part['cd_pid'].'" '.($part['cd_pid']==$department?'selected':'').'>'.$part['cd_name'].'</option>';?>
                 </select>
                 <span class="ml20">근무</span>
                 <select name="work_status" id="work_status" class="wAuto">
                     <option value="">전체</option>
-<?                  foreach(array('I'=>'근무중', 'E'=>'퇴사') as $k=>$v) echo '<option value="'.$k.'" '.($k==$work_status?'selected':'').'>'.$v.'</option>';?>                    
+<?                  foreach(array('I'=>'근무중', 'E'=>'퇴사') as $k=>$v) echo '<option value="'.$k.'" '.($k==$work_status?'selected':'').'>'.$v.'</option>';?>
                 </select>
                 <span class="ml20">직원</span>
                 <select class="multi_select" style="width:auto" name="searchKey[]" id="searchKey" multiple="multiple">
-<?                  foreach(array('mn_name'=>'이름', 'mn_hp'=>'휴대폰', 'mn_id'=>'아이디') as $sk=>$sv) echo '<option value="'.$sk.'">'.$sv.'</option>';?>
+<?                  foreach(array('mn_name'=>'이름', 'mn_hp'=>'휴대폰', 'mn_id'=>'아이디') as $sk=>$sv) echo '<option value="'.$sk.'" selected>'.$sv.'</option>';?>
                 </select>
                 <input type="text" name="searchWord" id="searchWord" class="mWt150" value="<?=$searchWord?>" placeholder="검색어" />
                 <button type="submit" class="bt_navy ml10">조회</button>
@@ -29,10 +29,10 @@
                     <button type="button" class="bt_black" onclick="popManagerFrm();">직원등록</button>
                     <button type="button" class="bt_green ml10 js-excel-btn" onclick="listExcel()">EXCEL</button>
                 </div> <!-- po_right // 오른쪽 버튼 -->
-                
+
             </div> <!-- box_row -->
         </div> <!-- search_box -->
-        
+
         <?# 리스트 영역?>
         <div class="table_wrap" id="list_area"></div>
 

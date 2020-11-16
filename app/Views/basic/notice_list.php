@@ -11,7 +11,7 @@
                     <input type="text" name="sdate" name="sdate" class="date mWt100 txac" value="<?=$sdate?>" > ~
                     <input type="text" name="edate" class="date mWt100 txac" value="<?=$edate?>" >                            
                 <span class="ml20">제목</span>
-                    <input type="text" name="searchWord" id="searchWord" class="mWt150" value="<?=$searchWord?>" placeholder="검색어" />
+                    <input type="text" name="searchWord" id="searchWord" class="mWt250" value="<?=$searchWord?>" placeholder="검색어" />
                     <button type="submit" class="bt_navy ml10">조회</button>
                 </form>
 
@@ -31,40 +31,59 @@
 </section>
 <?
 include_once 'popNoticeForm.php';
+include_once 'popNoticeView.php';
 ?>
 <script>
 sendSearch();
-function noticeWrite(evt, pid) {
+function noticeWrite(evt, pid, type) {
     evt.preventDefault();
     evt.stopPropagation();
 
     var pid = pid || '';
-    document.forms['regFrm'].bd_pid.value=pid;
-    if(pid) {
+    var type = type || '';
+    if(type=='view') {
         gcUtil.loader();
         $.ajax({
-            data: {mode:'get_notice', pid:pid},
+            data: {pid:pid},
             type: "POST",
-            url: "/basic/ajax_request",
+            url: "/basic/popNoticeViewData",
             cache: false,
-            dataType:'json',
-            success: function(resJson) {
+            dataType:'html',
+            success: function(resHtml) {
                 gcUtil.loader('hide');
-                // console.log('res', resJson);
-                if(!resJson.bd_pid) {
-                    alertBox('정보를 가져오는데 실패했습니다.');
-                }
-                else {
-                    setFormData('regFrm', resJson);
-                    pop_modal('pop_notice_reg');
-                }
+                $('#id_pop_notice_view').html(resHtml);
+                pop_modal('pop_notice_view');
             }
         });
     }
     else {
-        $('#regFrm #reg_date').html('');
-        setFormData('regFrm');
-        pop_modal('pop_notice_reg');
+        document.forms['regFrm'].bd_pid.value=pid;
+        if(pid) {
+            gcUtil.loader();
+            $.ajax({
+                data: {mode:'get_notice', pid:pid},
+                type: "POST",
+                url: "/basic/ajax_request",
+                cache: false,
+                dataType:'json',
+                success: function(resJson) {
+                    gcUtil.loader('hide');
+                    // console.log('res', resJson);
+                    if(!resJson.bd_pid) {
+                        alertBox('정보를 가져오는데 실패했습니다.');
+                    }
+                    else {
+                        setFormData('regFrm', resJson);
+                        pop_modal('pop_notice_reg');
+                    }
+                }
+            });
+        }
+        else {
+            $('#regFrm #reg_date').html('');
+            setFormData('regFrm');
+            pop_modal('pop_notice_reg');
+        }
     }
 }
 function noticeDel(pid) {

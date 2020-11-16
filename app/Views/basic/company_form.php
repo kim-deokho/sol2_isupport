@@ -49,6 +49,7 @@
                                     <div><button type="button" class="bt_text del_file"  data-prev="logo_prev" data-empty="<?=IMG_DIR?>/logo_photo.jpg" data-input="file_com_logo">삭제</button></div>                                                                                
                                 </div>
                                 <input type="file" name="file_com_logo" id="file_com_logo" class="hidden prev_file" data-prev="logo_prev" />
+                                <input type="hidden" name="file_com_logo_del" id="file_com_logo_del">
                             </div> <!-- logo_photo_reg -->
                         </td>
                         <th>업체도장<br />(투명(PNG)이미지 150&times;150 권장)</th>
@@ -60,6 +61,7 @@
                                     <div><button type="button" class="bt_text del_file" data-prev="stamp_prev" data-empty="<?=IMG_DIR?>/stamp_photo.jpg" data-input="file_com_seal">삭제</button></div>                                                                                
                                 </div>
                                 <input type="file" name="file_com_seal" id="file_com_seal" class="hidden prev_file" data-prev="stamp_prev" />
+                                <input type="hidden" name="file_com_seal_del" id="file_com_seal_del">
                             </div> <!-- stamp_photo_reg -->
                         </td>
                     </tr>

@@ -24,7 +24,7 @@
 					<tr>
 						<th class="mWt120">부품코드</th>
 						<td><input type="text" name="pt_code" id="pt_code" class="mWt200" value="" />
-						<label class="chkWrap ml10" id="label_is_auto"><input type="checkbox" name="is_auto" value="Y" /><i></i><span>자동</span></label></td>								
+						<label class="chkWrap ml10" id="label_is_auto"><input type="checkbox" name="is_auto" value="Y" checked /><i></i><span>자동</span></label></td>								
 					</tr>
 					<tr>
 						<th>등록일</th>

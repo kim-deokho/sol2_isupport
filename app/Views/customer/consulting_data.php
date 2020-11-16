@@ -15,20 +15,27 @@
 		</tr>
 	</thead>
 	<tbody id="">
-		<?for($i=20;$i>0;$i--){?>
-		<tr>
-			<td><?=$i?></td>
-			<td>2020-02-02 21:22:33</td>
-			<td>아웃</td>
-			<td>주문문의</td>
-			<td>상담내용</td>
-			<td>443433</td>
-			<td>홍길동</td>
-			<td>010-1234-2345</td>
-			<td>처리중</td>
-			<td>김상담</td>
-			<td><button type="button" class="small set_button" onclick="">듣기</button></td>
-		</tr>
-		<?}?>
+		<?
+    if($totCnt>0) {
+        foreach($rows as $row) {
+
+            echo '<tr onclick="view_coun(\''.$row['mc_pid'].'\')">';
+            echo '  <td>'.$num--.'</td>';
+            echo '  <td>'.$row['reg_date'].'</td>';
+            echo '  <td>'.$setting['code']['Counkind1'][$row['mc_kind1']]['cd_name'].'</td>';
+            echo '  <td>'.$setting['code']['Counkind2'][$row['mc_kind2']]['cd_name'].'</td>';
+            echo '  <td>'.$row['mc_contents'].'</td>';
+			echo '  <td>'.$row['mb_code'].'</td>';
+			echo '  <td>'.$row['mb_name'].'</td>';
+            echo '  <td>'.$row['mc_tel'].'</td>';
+            echo '  <td>'.$setting['code']['Counkind3'][$row['mc_kind3']].'</td>';
+            echo '  <td>'.$row['reg_name'].'</td>';
+			echo '  <td><button type="button" class="small set_button" onclick="">듣기</button></td>';
+            echo '</tr>';
+        }
+    }
+    else echo '<tr><td colspan="20">내역이 존재하지 않습니다.</td></tr>';
+?>
+
 	</tbody>
 </table>

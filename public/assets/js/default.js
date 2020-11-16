@@ -51,6 +51,7 @@ function attachEvt() {
         var input_id=$(this).attr('data-input');
         if(empty_img) $('#'+prev_id).attr('src', empty_img);
         $("#"+input_id).val("");
+        $("#"+input_id+"_del").val("Y");
     });
 
     // 멀티 셀렉트(쿼리에 멀티값이 없을때만 기본셋팅 / 있을때는 setFormQUery에서 셋팅 : 중복셋팅오류방지)
@@ -283,6 +284,7 @@ function sendSearch(pg) {
             gcUtil.loader('hide', '#list_area');
             $('#list_area').html(resJson.html);
             paging(resJson.totCnt, resJson.page, resJson.rcnt);
+            setBtnPermition();
         }
     });
 }

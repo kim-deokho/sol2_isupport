@@ -2,7 +2,7 @@
     <div class="contents">
 <?
         include_once APPPATH.'/Views/_page_path.php';
-?>    
+?>
         <div class="search_box mt10">
             <div class="box_row">
                 <form name="searchFrm" id="searchFrm" method="get" onsubmit="sendSearch(1);return false;">
@@ -10,11 +10,11 @@
                 <span>구분</span>
                 <select name="ct_kind" id="ct_kind" class="wAuto">
                     <option value="">전체</option>
-<?                  foreach($fix_codes->TraderKind as $k=>$v) echo '<option value="'.$k.'" '.($k==$trader_kind?'selected':'').'>'.$v.'</option>';?>                    
+<?                  foreach($fix_codes->TraderKind as $k=>$v) echo '<option value="'.$k.'" '.($k==$trader_kind?'selected':'').'>'.$v.'</option>';?>
                 </select>
                 <span class="ml20">거래처</span>
                 <select class="multi_select" style="width:auto" name="searchKey[]" id="searchKey" multiple="multiple">
-<?                  foreach(array('ct_name'=>'업체명', 'ct_no'=>'사업자번호') as $sk=>$sv) echo '<option value="'.$sk.'">'.$sv.'</option>';?>
+<?                  foreach(array('ct_name'=>'업체명', 'ct_no'=>'사업자번호') as $sk=>$sv) echo '<option value="'.$sk.'" selected>'.$sv.'</option>';?>
                 </select>
                 <input type="text" name="searchWord" id="searchWord" class="mWt150" value="<?=$searchWord?>" placeholder="검색어" />
                 <button type="submit" class="bt_navy ml10">조회</button>
@@ -23,10 +23,10 @@
                 <div class="po_right">
                     <button type="button" class="bt_black" onclick="popTraderRegFrm();">거래처등록</button>
                 </div> <!-- po_right // 오른쪽 버튼 -->
-                
+
             </div> <!-- box_row -->
         </div> <!-- search_box -->
-        
+
         <?# 리스트 영역?>
         <div class="table_wrap" id="list_area"></div>
 

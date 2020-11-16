@@ -2,14 +2,14 @@
     <div class="contents">
 <?
         include_once APPPATH.'/Views/_page_path.php';
-?> 
+?>
         <form name="searchFrm" id="searchFrm" method="get" onsubmit="sendSearch(1);return false;">
         <input type="hidden" name="page" id="page" value="<?=$page?>">
         <div class="search_box mt10">
             <div class="box_row">
                 <span>검색구분</span>
                 <select class="multi_select" style="width:auto" name="searchKey[]" id="searchKey" multiple="multiple">
-<?                  foreach(array('pd_name'=>'상품명', 'pd_code'=>'상품코드') as $sk=>$sv) echo '<option value="'.$sk.'">'.$sv.'</option>';?>
+<?                  foreach(array('pd_name'=>'상품명', 'pd_code'=>'상품코드') as $sk=>$sv) echo '<option value="'.$sk.'" selected>'.$sv.'</option>';?>
                 </select>
                 <input type="text" name="searchWord" id="searchWord" class="mWt150" value="<?=$searchWord?>" placeholder="검색어" />
 
@@ -59,7 +59,7 @@ function popHistory(pid){
                 url: data_url,
                 dataSrc: 'data'
             }
-            ,columns: [ 
+            ,columns: [
                 { "data": "no" },
                 { "data": "pd_code" },
                 { "data": "pd_name" },

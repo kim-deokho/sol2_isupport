@@ -1,6 +1,6 @@
 <table class="ltable_1 t_effect_1" id="">
     <thead>
-        <tr>									
+        <tr>
             <th class="mWt50">No.</th>
             <th>업체코드</th>
             <th>업체명</th>
@@ -30,7 +30,7 @@
             echo '</tr>';
         }
     }
-    else echo '<tr><td colspan="20">내역이 존재하지 않습니다.</td></tr>';
-?>    
+    else echo '<tr><td colspan="9">내역이 존재하지 않습니다.</td></tr>';
+?>
     </tbody>
 </table>

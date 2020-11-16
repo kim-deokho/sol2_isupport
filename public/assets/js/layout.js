@@ -83,13 +83,14 @@ $(function() {
 
 // 모달팝업
 function pop_modal(el){
+
     var temp = $("#" + el); 
     temp.modal({        
         fadeDuration: 0,
         escapeClose: false,
         clickClose: false,
         showClose: false,
-		closeExisting: false
+		closeExisting: true
     });
 
     temp.draggable({

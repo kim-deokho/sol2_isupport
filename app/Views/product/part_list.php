@@ -1,14 +1,14 @@
 <link rel="stylesheet" href="<?=LIB_DIR?>/jsTree/dist/themes/default/style.min.css" />
 <style>
-.vakata-context { 
-     z-index:999 !important; 
-} 
+.vakata-context {
+     z-index:999 !important;
+}
 </style>
 <section>
     <div class="contents">
 <?
         include_once APPPATH.'/Views/_page_path.php';
-?> 
+?>
         <form name="searchFrm" id="searchFrm" method="get" onsubmit="sendSearch(1);return false;">
         <input type="hidden" name="page" id="page" value="<?=$page?>">
         <div class="search_box mt10">
@@ -25,21 +25,23 @@
                 <span class="ml20">사용여부</span>
                 <select name="search_use" id="search_use" class="wAuto">
                     <option value="">전체</option>
-<?                  foreach(array('Y', 'N') as $k) echo '<option value="'.$k.'" '.($k==$search_use?'selected':'').'>'.$k.'</option>';?>      
+<?                  foreach(array('Y', 'N') as $k) echo '<option value="'.$k.'" '.($k==$search_use?'selected':'').'>'.$k.'</option>';?>
                 </select>
             </div> <!-- box_row -->
 
-            <div class="box_row mt10">                            
-                <span>부품명</span>                            				
+            <div class="box_row mt10">
+                <span>부품명</span>
                 <select class="multi_select" style="width:auto" name="searchKey[]" id="searchKey" multiple="multiple">
-<?                  foreach(array('pt_name'=>'부품명', 'pt_code'=>'부품코드') as $sk=>$sv) echo '<option value="'.$sk.'">'.$sv.'</option>';?>
+<?                  foreach(array('pt_name'=>'부품명', 'pt_code'=>'부품코드') as $sk=>$sv) echo '<option value="'.$sk.'" selected>'.$sv.'</option>';?>
                 </select>
                 <input type="text" name="searchWord" id="searchWord" class="mWt150" value="<?=$searchWord?>" placeholder="검색어" />
-                
+				
+				<button type="submit" class="bt_navy ml10">조회</button>
+
                 <div class="po_right">
-                    <button type="button" class="bt_black" onclick="popPartsRegFrm();">부품등록</button>    
+                    <button type="button" class="bt_black" onclick="popPartsRegFrm();">부품등록</button>
                     <button type="button" class="bt_black ml10" onclick="pop_modal('pop_category_set')">카테고리설정</button>
-                    <button type="button" class="bt_green ml10" onclick="listExcel()">EXCEL</button>
+                    <button type="button" class="bt_green ml10 js-excel-btn" onclick="listExcel()">EXCEL</button>
                 </div> <!-- po_right // 오른쪽 버튼 -->
             </div> <!-- box_row -->
         </div> <!-- search_box -->
@@ -155,7 +157,7 @@ $(function() {
 			}
 		}
 
-	}).bind("rename_node.jstree", function (e, data) { 
+	}).bind("rename_node.jstree", function (e, data) {
         if(jstreeAction=='create') {
             // 데이타 저장
             $.ajax({
@@ -177,7 +179,7 @@ $(function() {
             });
         }
         else if(jstreeAction=='rename') {
-            if (data.node.text && data.text != data.old) {    
+            if (data.node.text && data.text != data.old) {
                 $.ajax({
                     type : 'POST'
                     ,url : '/product/execute'
@@ -193,8 +195,8 @@ $(function() {
                     ,error : function(xhr, status, error) {
                         alertBox('Script Error');
                     }
-                });  
-            }    
+                });
+            }
         }
     });
 });
@@ -233,7 +235,7 @@ function popPartsRegFrm(pid) {
                     $('#reg_update').html(reg_date_html);
 
                     pop_modal('pop_parts_reg');
-                    
+
                     var cate1=resJson.pt_tc_code.substr(0, 3);
                     var cate2=resJson.pt_tc_code.substr(3, 3);
 
@@ -254,14 +256,14 @@ function popPartsRegFrm(pid) {
     else {
         $('#regFrm #pt_code').prop('disabled', false);
         $('#label_is_auto').css('display', 'inline-block');
-        
+
         $('#reg_update').html('');
         setFormData('regFrm');
         // 카테고리 초기화
         $('#'+cate_prefix+'1').val('').trigger('change');
         // 매입처 초기화
         $('#ct_pid').select2('val', {});
-        
+
         pop_modal('pop_parts_reg');
 
         // 카테고리 변경가능
