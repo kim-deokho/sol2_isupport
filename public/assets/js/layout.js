@@ -65,7 +65,7 @@ $(function() {
 	$(".tab_base > a").on('click',function(e){
 		var title = $(this).attr("title");
 		$(this).parents(".tab_wrap").children(".tab_base_con").hide();
-		$(this).parents(".tab_wrap").children("#"+title).fadeIn()
+		$(this).parents(".tab_wrap").children("#"+title).fadeIn();
 		$(this).parents(".tab_wrap").children(".tab_base").children("a").removeClass("active");
 		$(this).addClass("active");
 	});
@@ -82,15 +82,15 @@ $(function() {
 }); // ready 끝
 
 // 모달팝업
-function pop_modal(el){
-
+function pop_modal(el, is_close){
+    var is_close = is_close || 'Y';
     var temp = $("#" + el); 
     temp.modal({        
         fadeDuration: 0,
         escapeClose: false,
         clickClose: false,
         showClose: false,
-		closeExisting: true
+		closeExisting: is_close=='Y' ? true : false
     });
 
     temp.draggable({

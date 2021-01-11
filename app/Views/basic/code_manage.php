@@ -131,6 +131,9 @@ function popRegCode(cd_pid) {
                 else {
                     setFormData('regFrm', resJson);
                     pop_modal('pop_code_reg');
+                    setTimeout(function(){
+                        $('#cd_name').focus();
+                    }, 500);
                 }
             }
         });
@@ -139,6 +142,9 @@ function popRegCode(cd_pid) {
         setFormData('regFrm');
         setRadio('cd_use', 'Y');
         pop_modal('pop_code_reg');
+        setTimeout(function(){
+            $('#cd_name').focus();
+        }, 500);
     }
 }
 function regCode(f) {

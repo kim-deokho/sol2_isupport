@@ -14,6 +14,8 @@ use App\Models\MemberLevelModel;
 use App\Models\GiftModel;
 use App\Models\ChargeModel;
 use App\Models\PcmanageModel;
+use App\Models\PromotionModel;
+
 
 use App\Libraries\Fileuploader;
 use App\Libraries\Fixcodes;
@@ -39,6 +41,7 @@ class Basic extends BaseController
 		$this->gift_model = new GiftModel();
 		$this->dcharge_model = new ChargeModel();
 		$this->pcmanage_model = new PcmanageModel();
+		$this->promotion_model = new PromotionModel();
 
         //부서
         if(!$this->setting['code']['Departments']) $this->setting['code']['Departments']=$this->common_model->getCodeData(array('p_cd_code'=>'0101', 'returnType'=>'pid'));
@@ -376,7 +379,7 @@ class Basic extends BaseController
                 jsExecute($Scripts);
                 return;
             }
-            $existRows=$this->common_model->getCodeData(array('where'=>array('cd_name'=>$this->Params['cd_name'], 'cd_pid !='=>$this->Params['cd_pid'])));
+            $existRows=$this->common_model->getCodeData(array('where'=>array('p_cd_pid'=>$this->Params['p_cd_pid'], 'cd_name'=>$this->Params['cd_name'], 'cd_pid !='=>$this->Params['cd_pid'])));
             if(count($existRows)>0) {
                 $Scripts[]='parent.alertBoxFocus("이미 동일한 코드명이 존재합니다.", parent.document.forms["regFrm"].cd_name)';
                 jsExecute($Scripts);
@@ -604,6 +607,42 @@ class Basic extends BaseController
 
 			echo json_encode($result);
 		}
+		else if($this->Params['mode']=='reg_promotion') {
+			$RegData=$this->Params;
+
+			if($RegData['pm_standard_list'] != '') {
+				$tmp = explode("ㅩ",$RegData['pm_standard_list']);
+				$st_list = array();
+				for($i=0;$i<count($tmp);$i++) {
+					$tmp2 = explode("ㅫ",$tmp[$i]);
+					$st_list[$i]['pid'] = $tmp2[0];
+					$st_list[$i]['name'] = $tmp2[1];
+				}
+				$RegData['pm_standard_list'] = json_encode($st_list, JSON_UNESCAPED_UNICODE);
+			}
+
+			if($RegData['pm_mem_list'] != '') {
+				$m_tmp = explode("ㅩ",$RegData['pm_mem_list']);
+				$m_list = array();
+				for($i=0;$i<count($m_tmp);$i++) {
+					$m_tmp2 = explode("ㅫ",$m_tmp[$i]);
+					$m_list[$i]['pid'] = $m_tmp2[0];
+					$m_list[$i]['name'] = $m_tmp2[1];
+				}
+				$RegData['pm_mem_list'] = json_encode($m_list, JSON_UNESCAPED_UNICODE);
+			}
+
+			if($this->Params['pm_pid']) {
+				$RegData['up_id']=$this->session->get('ss_mn_pid');
+				$this->promotion_model->update($this->Params['dc_pid'], $RegData);
+			} else {
+				$RegData['reg_id']=$this->session->get('ss_mn_pid');
+				$this->promotion_model->insert($RegData);
+			}
+			$Scripts[] = "parent.alertBox('정상처리되었습니다.', parent.location.reload())";
+            jsExecute($Scripts);
+
+		}
 
     }
 
@@ -781,8 +820,11 @@ class Basic extends BaseController
 
 		$ct_rows=$this->basic_model->getTraderList($options);
 
+		$partCategorysJS=$this->pcmanage_model->getPartCategorys(array('type'=>'js'));
+
 		$viewParams['pd_rows']=$pd_rows;
 		$viewParams['ct_rows']=$ct_rows;
+		$viewParams['partCategorysJS']=$partCategorysJS;
 
         $this->_header();
         echo view('basic/promotion_list', $viewParams);

@@ -17,6 +17,7 @@
 <?
     if(count($rows)>0) {
 		foreach($rows as $row) {
+            $selectData=array('dy_name'=>$row['dy_name'], 'dy_tel1'=>$row['dy_tel1'], 'dy_tel2'=>$row['dy_tel2'], 'dy_post'=>$row['dy_post'], 'dy_addr'=>$row['dy_addr'], 'dy_addr2'=>$row['dy_addr2']);
 			echo '<tr onclick="view_dely(\''.$row['dy_pid'].'\',\''.$row['dy_name'].'\',\''.$row['dy_tel1'].'\',\''.$row['dy_tel2'].'\',\''.$row['dy_post'].'\',\''.$row['dy_addr'].'\',\''.$row['dy_addr2'].'\')">';
 			echo '  <td>'.$row['dy_name'].'</td>';
 			echo '  <td>'.$row['dy_tel1'].'</td>';
@@ -24,7 +25,7 @@
 			echo '  <td>'.$row['dy_post'].'</td>';
 			echo '  <td>'.$row['dy_addr'].'</td>';
 			echo '  <td>'.$row['dy_addr2'].'</td>';
-			if($order == 'Y') echo '	<td><button type="button" class="small bt_gray" onclick="">적용</button></td>';
+			if($order == 'Y') echo "	<td><button type='button' class='small bt_gray' id='id_dy_".$row['dy_pid']."' data-select='".json_encode($selectData)."' onclick='event.cancelBubble=true;".$callback."(\"id_dy_".$row['dy_pid']."\")'>적용</button></td>";
 			echo '  <td><label class="radioWrap"><input type="radio" name="dy_basic[]" value="'.$row['dy_pid'].'" onclick="confirmBox(\'해당주소를 기본배송지로 설정하시겠습니까?\', basic_dely, \''.$row['dy_pid'].'\')" '.($row['dy_basic'] == 'Y' ? 'checked':'').'/><i></i></label></td>';
 			echo '  <td><button type="button" class="bt_red" onclick="del_dely(\''.$row['dy_pid'].'\')">삭제</button></td>';
 			echo '</tr>';

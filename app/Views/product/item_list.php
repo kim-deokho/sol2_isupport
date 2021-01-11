@@ -203,7 +203,7 @@ function setBomData(val) {
     trHtml+='   <td>'+pd_name+'</td>';
     trHtml+='   <td><input type="text" name="Data[cnt][]" onkeyup="inputNumberAutoComma(this)" class="mWt60 h_20 txar bom_products input-comma" data-pid="'+pd_pid+'" value="" /></td>';
     trHtml+='   <td>'+inputNumberWithComma(pd_in_price)+'</td>';
-    trHtml+='   <td><input type="text" name="Data[price][]" onkeyup="inputNumberAutoComma(this)" class="mWt100 h_20 txar input-comma" value="'+pd_out_price+'" /></td>';
+    trHtml+='   <td><input type="text" name="Data[price][]" onkeyup="inputNumberAutoComma(this)" class="mWt100 h_20 txar input-comma" value="'+inputNumberWithComma(pd_out_price)+'" /></td>';
     trHtml+='   <td><button type="button" class="small bt_red js-del-btn" onclick="delBomData(\''+pk_idx+'\')">삭제</button></td>';
     trHtml+='<input type="hidden" name="Data[pd_pid][]" value="'+pd_pid+'">';
     trHtml+='<input type="hidden" name="Data[pb_pid][]"">';
@@ -253,6 +253,7 @@ function saveProduct(f) {
         if($('#is_auto').is(':checked')) {
             confirmBox("상품코드를 '자동'으로 생성시 입력하신 상품코드는 적용되지 않습니다.<br>상품코드를 자동으로 등록하시겠습니까?", 'sendForm', f);
         }
+        else sendForm(f);
     }
     else sendForm(f);
 }

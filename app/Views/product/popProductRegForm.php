@@ -25,7 +25,7 @@
 					<tr>
 						<th class="mWt100">상품코드</th>
 						<td class="mWt360"><input type="text" name="pd_code" id="pd_code" class="mWt200" value=""/>
-						<label class="chkWrap ml10" id="label_is_auto"><input type="checkbox" name="is_auto" value="Y" checked /><i></i><span>자동</span></label></td>
+						<label class="chkWrap ml10" id="label_is_auto"><input type="checkbox" name="is_auto" id="is_auto" value="Y" checked /><i></i><span>자동</span></label></td>
 						<th class="mWt100">등록일</th>
 						<td><span id="reg_update"></span></td>
 					</tr>

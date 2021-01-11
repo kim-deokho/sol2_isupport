@@ -87,7 +87,7 @@
 
 		<div class="buttonCenter mt20">
 			<a href="#" rel="modal:close"><button type="button" class="bt_150_40 bt_gray modal_close">취소</button></a>
-			<button type="submit" class="bt_150_40 bt_black ml5">저장</button>
+			<button type="submit" class="bt_150_40 bt_black ml5 js-save-btn">저장</button>
         </div> <!-- buttonCenter -->
         </form>
 	</div> <!-- modal_contents -->

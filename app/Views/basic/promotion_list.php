@@ -39,9 +39,12 @@
 				<?
 			include_once "pop_event_reg.php"; // 프로모션등록
 		?>
-
+<script src="<?=JS_DIR?>/category.controller.js"></script>
 <script type="text/javascript">
 	sendSearch();
+
+	cateCtr.categorysJS = <?=json_encode($partCategorysJS)?>;
+cateCtr.set();
     // 프로모션등록
     function event_reg(){
         pop_modal('pop_event_reg');

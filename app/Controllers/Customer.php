@@ -6,6 +6,9 @@ use App\Models\MemberModel;
 use App\Models\TraderModel;
 use App\Models\Counselmodel;
 use App\Models\DeliveryModel;
+use App\Models\ProductModel;
+use App\Models\PcmanageModel;
+use App\Models\MemberasModel;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -21,6 +24,9 @@ class Customer extends BaseController
 		$this->member_model = new MemberModel();
 		$this->counsel_model = new Counselmodel();
 		$this->delivery_model = new DeliveryModel();
+        $this->product_model = new ProductModel();
+        $this->pcmanage_model = new PcmanageModel();
+        $this->member_as_model = new MemberasModel();
 
 
 		// 매입처
@@ -230,10 +236,52 @@ class Customer extends BaseController
 			$RegData['dy_basic'] = 'Y';
 			$RegData['up_id'] = $this->session->get('ss_mn_pid');
 			$this->delivery_model->update($this->Params['dy_pid'], $RegData);
-			debug($this->delivery_model);
+
 			$msg="정상적으로 적용되었습니다.";
 			$Scripts[] = "parent.alertBox('".$msg."', parent.list_dely)";
-		}
+        }
+        else if($this->Params['mode']=='add_member_as') {
+            $RegData=$this->Params;
+            //상담접수
+            if(!$this->Params['mc_pid']) {
+                $rows = $this->counsel_model->selectMax('mc_code')->where('left(reg_date, 10)', date("Y-m-d"))->find()[0];
+                
+                if($rows == ""){
+                    $sn = "0001";
+                } else {
+                    $sn = (int)$rows['mc_code'] +1 ;
+                    $sn = getSerial($sn,4);
+                }
+
+                $RegData['mc_code'] = "CS".date('Ymd')."-".$sn;
+                $RegData['reg_id'] = $this->session->get('ss_mn_pid');
+                $insert_id=$this->counsel_model->insert($RegData);  
+                $RegData['mc_pid']=$insert_id;
+            }
+            else {
+				$this->counsel_model->update($this->Params['mc_pid'], $RegData);
+			}
+
+            // AS접수
+            if(!$this->Params['ma_pid']) {
+                $rows = $this->member_as_model->selectMax('ma_code')->where('left(reg_date, 10)', date("Y-m-d"))->find()[0];
+                
+                if($rows == ""){
+                    $sn = "0001";
+                } else {
+                    $sn = (int)$rows['ma_code'] +1 ;
+                    $sn = getSerial($sn,4);
+                }
+                $RegData['mc_code'] = "AS".date('Ymd')."-".$sn;
+                $insert_id=$this->member_as_model->insert($RegData);  //AS접수
+            }
+            else {
+				$this->member_as_model->update($this->Params['ma_pid'], $RegData);
+            }
+            $msg="정상적으로 처리되었습니다.";
+            $Scripts[] = "parent.alertBox('".$msg."', parent.regAsComplete)";
+
+        }
 
 
 
@@ -248,9 +296,17 @@ class Customer extends BaseController
 			$this->Params['page'] = 1;
 			$this->Params['rcnt'] = 0;
 			$rows = $this->mbm_model->getMemberList($this->Params);
-			$option = '<option value="">== ↓ 밑의 해당 고객을 선택하세요. ==</option>';
+			if($this->Params['mode2']=='table') {
+				$option = '';
+			} else {
+				$option = '<option value="">== ↓ 밑의 해당 고객을 선택하세요. ==</option>';
+			}
 			foreach($rows as $row) {
-				$option .= '<option value="'.$row['mb_pid'].'">'.$row['mb_code'].'|'.$row['mb_name'].'|'.$row['mb_tel1'].'|'.$row['mb_tel2'].'|'.$row['mb_addr'].' '.$row['mb_addr2'].'</option>';
+				if($this->Params['mode2']=='table') {
+					$option .= '<tr onclick="cus_click(\''.$row['mb_pid'].'\',\''.$row['mb_name'].'\')"><td>'.$row['mb_code'].'</td><td>'.$row['mb_name'].'</td><td>'.$row['mb_tel1'].'</td></tr>';
+				} else {
+					$option .= '<option value="'.$row['mb_pid'].'">'.$row['mb_code'].'|'.$row['mb_name'].'|'.$row['mb_tel1'].'|'.$row['mb_tel2'].'|'.$row['mb_addr'].' '.$row['mb_addr2'].'</option>';
+				}
 			}
 			echo $option;
 		} else if($this->Params['mode']=='mem_sel') {
@@ -260,7 +316,8 @@ class Customer extends BaseController
 			$row = $this->mbm_model->getConsultingList($this->Params);
 			echo json_encode($row);
 		} else if($this->Params['mode']=='dely_list') {
-			$rows = $this->delivery_model->where("mb_pid",$this->Params['mb_pid'])->where('dy_del', 'N')->findAll();
+            $rows = $this->delivery_model->where("mb_pid",$this->Params['mb_pid'])->where('dy_del', 'N')->findAll();
+            $viewParams=$this->Params;
 			$viewParams['rows'] = $rows;
 			$listHtml=view('customer/delivery_data', $viewParams);
 			 echo json_encode(array('totCnt'=>$totCnt, 'rcnt'=>$viewParams['rcnt'], 'page'=>$viewParams['page'], 'html'=>$listHtml));
@@ -269,7 +326,17 @@ class Customer extends BaseController
 
 	public function member_manage()
 	{
-		$viewParams=$this->Params;
+        //AS부위
+        if(!$this->setting['code']['AsPart']) $this->setting['code']['AsPart']=$this->common_model->getCodeData(array('p_cd_code'=>'0312'));
+        //AS증상
+        if(!$this->setting['code']['AsSymptom']) $this->setting['code']['AsSymptom']=$this->common_model->getCodeData(array('p_cd_code'=>'0313'));
+        //AS구분
+        if(!$this->setting['code']['AsKind']) $this->setting['code']['AsKind']=$this->common_model->getCodeData(array('p_cd_code'=>'0314'));
+
+        $viewParams=$this->Params;
+        $viewParams['productRows']=$this->product_model->findAll();
+        $viewParams['categorys']=$this->pcmanage_model->getCategorys(array('type'=>'pid'));
+        $viewParams['setting']=$this->setting;
 
         $this->_header();
         echo view('customer/member_manage', $viewParams);

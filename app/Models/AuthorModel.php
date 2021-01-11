@@ -12,10 +12,17 @@ class AuthorModel extends BaseModel
         $builder = $this->dDB->table('tb_manager');
         $builder->where('mn_id', $options['user_id']);
         $user=$builder->get()->getRowArray();
+
         $result=$user;
         if($user['mn_id']) {
             if($user['mn_pw']!=$this->sql_password($options['user_pwd'])) {
                 $result['err']='비밀번호가 일치하지 않습니다.';
+            }
+            else if($options['work_type']) {
+                $exp_work=explode(',', $user['mn_work']);
+                if(!in_array($options['work_type'], $exp_work)) {
+                    $result['err']='로그인 가능한 사용자가 아닙니다.';
+                }
             }
         }
         else $result['err']='존재하지 않는 ID 입니다.';

@@ -52,13 +52,24 @@ class BaseController extends Controller
         if(!is_cli()) {
             $this->session = \Config\Services::session();
 
-            if(!$this->session->get('isLogin')) {
-				$exp_path = explode('/', $_SERVER['REQUEST_URI']);
-				if($exp_path[1]!='auth') {
-					jsExecute('top.location.href="/auth/login"');
-					exit;
-				}
-			}
+            $exp_path=explode('/', $_SERVER['REQUEST_URI']);
+            if($exp_path[1]=='m') {
+                if(!$this->session->get('as_mn_pid')) {
+                    if($exp_path[2]!='auth') {
+                        jsExecute('top.location.href="/m/auth/login"');
+                        exit;
+                    }
+                }
+
+            }
+            else {
+                if(!$this->session->get('isLogin')) {
+                    if($exp_path[1]!='auth') {
+                        jsExecute('top.location.href="/auth/login"');
+                        exit;
+                    }
+                }
+            }
 
             $this->setDefine();
         }
@@ -84,11 +95,16 @@ class BaseController extends Controller
         set_cookie('pk_name', $pk_name, 0, $site_host);
         $upload_dir=FCPATH.'/assets/upload/'.$pk_name;
         
+        define('SITE_HOST', $site_host);
+
         define('IMG_DIR', '/assets/img');
-		define('SITE_HOST', $site_host);
-		
 		define('CSS_DIR', '/assets/css');
-		define('JS_DIR', '/assets/js');
+        define('JS_DIR', '/assets/js');
+
+        define('M_IMG_DIR', '/assets/m/img');
+        define('M_CSS_DIR', '/assets/m/css');
+        define('M_JS_DIR', '/assets/m/js');
+        
         define('LIB_DIR', '/assets/lib');
 		define('UPLOAD_HOST', $site_host);
         define('UPLOAD_DIR', $upload_dir);
@@ -127,6 +143,61 @@ class BaseController extends Controller
 	function _footer($show='Y') {
 		$viewParams['show']=$show;
 		echo view('_footer', $viewParams);
+    }
+    
+    function _mheader($show='Y') {
+        $viewParams=array('tDate'=>date('YmdH'));
+		echo view('m/_head', $viewParams);
+		
+		if($show=='Y') {
+            $menus=array(
+                'delivery'=>array(
+                    'label'=>'배송관리'
+                    ,'sub'=>array(
+                        array('label'=>'배정현황', 'link'=>'status_list')
+                        ,array('label'=>'배송중', 'link'=>'progress_list')
+                        ,array('label'=>'배송완료', 'link'=>'complete_list')
+                    )
+                )
+                ,'aservice'=>array(
+                    'label'=>'AS관리'
+                    ,'sub'=>array(
+                        array('label'=>'배정현황', 'link'=>'status_list')
+                        ,array('label'=>'방문예정', 'link'=>'going_list')
+                        ,array('label'=>'처리중', 'link'=>'progress_list')
+                        ,array('label'=>'처리완료', 'link'=>'complete_list')
+                    )
+                )
+                ,'part'=>array(
+                    'label'=>'부품'
+                    ,'sub'=>array(
+                        array('label'=>'부품현황', 'link'=>'status_list')
+                        ,array('label'=>'요청내역', 'link'=>'request_list')
+                        ,array('label'=>'폐기내역', 'link'=>'disposal_list')
+                    )
+                )
+            );
+            $this->setting['menus']=$menus;
+            $HostUri=gethostUri($_SERVER['REQUEST_URI']);
+            $this->setting['HostUri']=$HostUri;
+            $this->setting['session']=$this->session;
+            $page_title='';
+            foreach ($menus[$HostUri[2]]['sub'] as $value) {
+                if($value['link']!=$HostUri[3]) continue;
+                $page_title=$value['label'];
+                break;
+            }
+            $this->setting['page_title']='['.$menus[$HostUri[2]]['label'].']'.$page_title;
+
+			$viewParams['setting']=$this->setting;
+			echo view('m/_header', $viewParams);
+		}
+
+	}
+
+	function _mfooter($show='Y') {
+		$viewParams['show']=$show;
+		echo view('m/_footer', $viewParams);
 	}
 
 

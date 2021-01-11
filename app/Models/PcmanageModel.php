@@ -380,9 +380,10 @@ class PcmanageModel extends BaseModel
 			'where'=>array(
 				'p_tc_parent'=>$parent_cate_id
 				,'tc_name'=>$params['name']
-				,'tc_code !='=>$params['cate_id']
+				,'tc_code !='=>$cate_id
 			)
-		);
+        );
+        
         $isRow=$this->getPartCategoryData($options);
         if($isRow['tc_code']) return array('err'=>'동일한 카테고리명이 존재합니다.');
 

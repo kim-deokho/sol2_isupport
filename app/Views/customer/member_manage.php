@@ -203,7 +203,7 @@
                                 <div>상담관리</div>
 
                                 <div>
-                                    <button type="button" class="set_button d_none mem_load" onclick="pop_modal('pop_as_reg');">AS등록</button>
+                                    <button type="button" class="set_button d_none mem_load" onclick="as_reg();">AS등록</button>
                                     <button type="button" class="bt_gray ml5 d_none mem_load" onclick="coun_his()">상담내역</button>
                                 </div>
                             </div> <!-- title_2 -->
@@ -213,7 +213,7 @@
                                     <tbody>
                                         <tr>
                                             <td>
-                                                <select name="mc_tel" class="wAuto" required>
+                                                <select name="mc_tel" class="mc_tel wAuto" required>
 
                                                 </select>
 
@@ -316,6 +316,7 @@
             include_once "pop_as_reg.php"; // as등록
             include_once "pop_coun_his.php"; // 상담내역
             include_once "pop_adress_reg.php"; // 배송지등록
+            include_once "pop_adress_list.php"; // 배송지선택
             include_once "pop_bankbook_reg.php"; // 무통장 입력
             include_once "pop_card_reg.php"; // 카드 입력
         ?>
@@ -324,7 +325,11 @@
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="<?=JS_DIR?>/daum.post.ctr.js"></script>
 <script type="text/javascript">
-
+    $(document).ready(function() {
+        $('.js-single-selector').select2();
+    });
+    var categorys = <?=json_encode($categorys)?>;
+    var customer = <?=json_encode($setting['customer'])?>;
 	function serch_member() {
 		$.ajax({
 			url : 'ajax_request',
@@ -376,18 +381,17 @@
 					setFormData("mem_reg2",res);
 					$(".mem_load").removeClass("d_none");
 
-
 					$(" input[name='mb_pid']").val(res.mb_pid);
-					$("select[name='mc_tel'] option").remove();
+					$(".mc_tel option").remove();
 
 					if(res.mb_tel1 != "") {
-						$(" select[name='mc_tel']").append('<option value="'+res.mb_tel1+'">전화1</option>');
+						$(".mc_tel").append('<option value="'+res.mb_tel1+'">전화1</option>');
 					}
 					if(res.mb_tel2 != "") {
-						$(" select[name='mc_tel']").append('<option value="'+res.mb_tel2+'">전화2</option>');
+						$(".mc_tel").append('<option value="'+res.mb_tel2+'">전화2</option>');
 					}
 					if(res.mb_tel3 != "") {
-						$(" select[name='mc_tel']").append('<option value="'+res.mb_tel3+'">전화3</option>');
+						$(".mc_tel").append('<option value="'+res.mb_tel3+'">전화3</option>');
 					}
 				} else {
 					setFormData("mem_reg2",res);
@@ -422,18 +426,25 @@
     }
 
     // 배송지등록
-    function adress_reg(){
-		list_dely()
-		pop_modal('pop_adress_reg');
+    function adress_reg(callback){
+        list_dely(callback);
+		pop_modal('pop_adress_reg', callback ? 'N' : 'Y');
     }
 
 	//배송지 목록
-	function list_dely() {
+	function list_dely(callback) {
+
 		$("#bsf")[0].reset();
-		$("#dy_pid").val('');
+        $("#dy_pid").val('');
+        var dataParams ={mode:'dely_list',mb_pid:$("input[name='mb_pid']").val()};
+        if(callback) {
+            dataParams.order='Y';
+            dataParams.callback=callback;
+        }
+        console.log(callback, dataParams);
 		gcUtil.loader('show', '#pop_dlist_area');
 		$.ajax({
-			data: {mode:'dely_list',mb_pid:$("input[name='mb_pid']").val()},
+			data: dataParams,
 			type: "POST",
 			url: 'ajax_request',
 			cache: false,
@@ -445,7 +456,19 @@
 
 			}
 		});
-	}
+    }
+    
+    function selectDelivery(target_id) {
+        var result = $('#'+target_id).data('select');
+        var f = document.forms['asFrm'];
+        f.ma_cut_name.value = result.dy_name ? result.dy_name : '';
+        f.ma_cut_tel.value = result.dy_tel ? result.dy_tel : '';
+        f.ma_cut_tel2.value = result.dy_tel2 ? result.dy_tel2 : '';
+        f.ca_post.value = result.dy_post ? result.dy_post : '';
+        f.ca_addr.value = result.dy_addr ? result.dy_addr : '';
+        f.ca_addr2.value = result.dy_addr2 ? result.dy_addr2 : '';
+        close_modal();
+    }
 
 	//배송지 삭제
 	function del_dely(dy_pid) {
@@ -485,6 +508,8 @@
 
 	// as등록
     function as_reg(){
+        document.forms['asFrm'].reset();
+        $('#pd_pid').val('').trigger('change');
         pop_modal('pop_as_reg');
     }
 
@@ -618,7 +643,46 @@
 
 			}
 		});
-	}
+    }
+    
+    function setProduct(pid) {
+		$.ajax({
+			url : '/product/ajax_request',
+			data : {mode:'get_product', 'pid':pid},
+			type: "POST",
+			cache: false,
+			dataType:'json',
+			success: function(resJson) {
+                let catePathName = new Array();
+                let ct_name = null;
+                let resHtml = '';
+                if(resJson.pd_pid) {
+                    catePathName.push(categorys[resJson.pc_pid1]['pc_name']);
+                    if(resJson.pc_pid2) catePathName.push(categorys[resJson.pc_pid2]['pc_name']);
+                    if(resJson.pc_pid3) catePathName.push(categorys[resJson.pc_pid3]['pc_name']);
+
+                    for(var i in customer) {
+                        if(customer[i]['ct_pid']!=resJson.ct_pid) continue;
+                        ct_name = customer[i]['ct_name'];
+                        break;
+                    }
+                    resHtml = '<tr>';
+                    resHtml += '<td>'+catePathName.join(' > ')+'</td>';
+                    resHtml += '<td>'+ct_name+'</td>';
+                    resHtml += '<td>'+resJson.pd_code+'</td>';
+                    resHtml += '<td>'+resJson.pd_name+'</td>';
+                    resHtml += '</tr>';
+                }
+                $('#as_product tbody').html(resHtml);
+			}
+		});
+
+		return false;
+    }
+    
+    function regAsComplete() {
+        close_modal();
+    }
 
 
 </script>

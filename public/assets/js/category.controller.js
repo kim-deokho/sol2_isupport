@@ -8,9 +8,15 @@ var cateCtr = {
         this.setSelCategorys(val, depth);
         $('.'+targetName).each(function(i){
             si = i+1;
+			
+			if(targetName == 'promotion') {
+				text = '카테고리선택';
+			} else {
+				text = '전체';
+			}
             if(si>depth) {
                 $('#'+prefix+si+' option').remove();
-                $('#'+prefix+si).append('<option value="">전체</option>');
+                $('#'+prefix+si).append('<option value="">'+text+'</option>');
             }
         });
         if(val!="") {
