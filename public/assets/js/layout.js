@@ -81,26 +81,7 @@ $(function() {
 	};
 }); // ready 끝
 
-// 모달팝업
-function pop_modal(el, is_close){
-    var is_close = is_close || 'Y';
-    var temp = $("#" + el); 
-    temp.modal({        
-        fadeDuration: 0,
-        escapeClose: false,
-        clickClose: false,
-        showClose: false,
-		closeExisting: is_close=='Y' ? true : false
-    });
 
-    temp.draggable({
-        handle: ".modal_header"
-    });     
-};
-
-function close_modal() {
-    $.modal.getCurrent().close();
-}
 
 // 경고창
 function alert_layer(tx){	

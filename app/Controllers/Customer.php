@@ -9,10 +9,13 @@ use App\Models\DeliveryModel;
 use App\Models\ProductModel;
 use App\Models\PcmanageModel;
 use App\Models\MemberasModel;
+use App\Models\AssignasModel;
+use App\Models\AshistoryModel;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
+use App\Libraries\Fixcodes;
 
 class Customer extends BaseController
 {
@@ -27,6 +30,9 @@ class Customer extends BaseController
         $this->product_model = new ProductModel();
         $this->pcmanage_model = new PcmanageModel();
         $this->member_as_model = new MemberasModel();
+        $this->assign_as_model = new AssignasModel();
+        $this->as_history_model = new AshistoryModel();
+        $this->fix_codes = new Fixcodes();
 
 
 		// 매입처
@@ -272,8 +278,17 @@ class Customer extends BaseController
                     $sn = (int)$rows['ma_code'] +1 ;
                     $sn = getSerial($sn,4);
                 }
-                $RegData['mc_code'] = "AS".date('Ymd')."-".$sn;
-                $insert_id=$this->member_as_model->insert($RegData);  //AS접수
+                $RegData['ma_code'] = "AS".date('Ymd')."-".$sn;
+                $as_insert_id=$this->member_as_model->insert($RegData);  //회원 AS접수
+
+                // 기사 AS접수
+                $RegData['ma_pid']=$as_insert_id;
+                $aa_insert_id=$this->assign_as_model->insert($RegData);
+
+                // 로그
+                $logState='01';
+                $logData=array('aa_pid'=>$aa_insert_id, 'tah_state'=>$logState, 'tah_memo'=>$this->fix_codes->AsState[$logState], 'reg_id'=>$this->session->get('ss_mn_pid'));
+                $this->as_history_model->insert($logData);
             }
             else {
 				$this->member_as_model->update($this->Params['ma_pid'], $RegData);
@@ -282,9 +297,6 @@ class Customer extends BaseController
             $Scripts[] = "parent.alertBox('".$msg."', parent.regAsComplete)";
 
         }
-
-
-
 
 		jsExecute($Scripts);
 		exit;
@@ -465,7 +477,7 @@ class Customer extends BaseController
         $this->_footer();
 	}
 
-	public function after_service()
+	public function as_list()
 	{
 		$viewParams=$this->Params;
 

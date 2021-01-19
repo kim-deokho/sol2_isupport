@@ -36,6 +36,9 @@ class BaseController extends Controller
     protected $common_model;
     protected $Params;
     protected $paging_rcnt=20;
+    protected $uri;
+    protected $bottom_navi;
+    protected $now_date;
 
 
 	/**
@@ -60,6 +63,16 @@ class BaseController extends Controller
                         exit;
                     }
                 }
+
+                $this->uri = service('uri');
+                $this->bottom_navi=array(
+                    'aservice'=>array(
+                        'status_list'=>'배정현황'
+                        ,'going_list'=>'방문예정'
+                        ,'progress_list'=>'처리중'
+                        ,'complete_list'=>'처리완료'
+                    )
+                );
 
             }
             else {
@@ -94,6 +107,8 @@ class BaseController extends Controller
         if($pk_name=='local') $pk_name='sol2';
         set_cookie('pk_name', $pk_name, 0, $site_host);
         $upload_dir=FCPATH.'/assets/upload/'.$pk_name;
+
+        $this->now_date=date('Y-m-d H:i:s');
         
         define('SITE_HOST', $site_host);
 
@@ -196,7 +211,7 @@ class BaseController extends Controller
 	}
 
 	function _mfooter($show='Y') {
-		$viewParams['show']=$show;
+        $viewParams['show']=$show;
 		echo view('m/_footer', $viewParams);
 	}
 

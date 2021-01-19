@@ -10,10 +10,12 @@
 			<span></span>
 		</div> <!-- modal_title -->
 		<div class="modal_close">
-			<a href="#" rel="modal:close"><img src="../common/img/pop_close.png" alt="팝업닫기" /></a>
+			<a href="#" rel="modal:close"><img src="<?=IMG_DIR?>/pop_close.png" alt="팝업닫기" /></a>
 		</div> <!-- modal_close --> 
 	</div> <!-- modal_header -->
-
+    <form name="asmFrm" id="asmFrm" method="post" onsubmit="asmSave();return false;">
+    <input type="hidden" name="mode" value="select_as_manager">
+    <input type="hidden" name="aa_pid" id="aa_pid">
 	<div class="modal_contents">
 		<div class="table_wrap y_over">
 			<table class="ltable_1" id="">
@@ -25,16 +27,7 @@
 						<th>선택</th>
 					</tr>
 				</thead>
-				<tbody id="">
-					<?for($i=20;$i>0;$i--){?>
-					<tr>
-						<td>김기사</td>
-						<td>2</td>
-						<td>15/5</td>
-						<td><label class="radioWrap"><input type="radio" name="기사배정2[]" value="" /><i></i></label></td>
-					</tr>
-					<?}?>                                
-				</tbody>
+				<tbody id=""></tbody>
 			</table>
 		</div> <!-- table_wrap -->
 
@@ -44,11 +37,9 @@
 		</div> <!-- pop_recautions -->                
 
 		<div class="buttonCenter mt20">					
-			<button type="button" class="bt_red" onclick="">배정취소</button>
-			<button type="button" class="bt_black ml5" onclick="">저장</button>
+			<button type="button" class="bt_red" id="btn_asm_cancel" onclick="asmCancel(this.form)">배정취소</button>
+			<button type="submit" class="bt_black ml5">저장</button>
 		</div> <!-- buttonCenter -->
 	</div> <!-- modal_contents -->
+    </form>
 </div> <!-- modal -->
-
-<script type="text/javascript">    
-</script>

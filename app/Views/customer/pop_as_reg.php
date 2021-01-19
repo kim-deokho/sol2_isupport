@@ -167,6 +167,3 @@
     </div> <!-- modal_contents -->
     </form>
 </div> <!-- modal -->
-
-<script type="text/javascript">
-</script>

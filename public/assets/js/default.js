@@ -74,6 +74,7 @@ function setBtnPermition() {
 }
 
 function sendSearch(pg) {
+    var pg = pg || '';
     var f = document.forms['searchFrm'];
     if(pg=='history' || !pg) setFormQuery(pg);
     if(pg!='history') f.page.value=pg || (f.page.value>0 ? f.page.value : 1);
@@ -83,8 +84,12 @@ function sendSearch(pg) {
     var data_url = url_path+'_data';
     var params_data=$('#searchFrm').serialize();
 
-    if(pg && pg!='history') 
+    console.log('pg', pg);
+
+    if(pg && pg!='history') {
+        console.log('push');
         history.pushState(null, jsConfig.url_path.fnm+'>'+jsConfig.url_path.snm, url_path+'?'+params_data);
+    }
     gcUtil.loader('show', '#list_area');
     $.ajax({
         data: params_data,
@@ -140,7 +145,7 @@ function setFormQuery(pg) {
             $multi_select.multipleSelect('refresh');
         }
     }
-    // console.log('querys', querys);
+
     
     for(var k in querys) {
         d_k=decodeURIComponent(k);

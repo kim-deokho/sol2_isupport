@@ -492,7 +492,7 @@ class Basic extends BaseController
                 $dataParams['reg_id']=$this->session->get('ss_mn_pid');
                 $this->board_model->insert($dataParams);
             }
-            $Scripts[] = "parent.alertBox('정상처리되었습니다.', parent.location.reload())";
+            $Scripts[] = "parent.alertBox('정상처리되었습니다.', parent.win_load)";
             jsExecute($Scripts);
         }
         else if($this->Params['mode']=='del_notice') {  // 공지삭제
@@ -544,7 +544,7 @@ class Basic extends BaseController
 				}
 			}
 
-			$Scripts[] = "parent.alertBox('정상처리되었습니다.', parent.location.reload())";
+			$Scripts[] = "parent.alertBox('정상처리되었습니다.', parent.win_load)";
             jsExecute($Scripts);
 		}
 		else if($this->Params['mode']=='del_level') { //회원 레벨 삭제
@@ -568,7 +568,7 @@ class Basic extends BaseController
 			}
 
 
-			$Scripts[] = "parent.alertBox('정상처리되었습니다.', parent.location.reload())";
+			$Scripts[] = "parent.alertBox('정상처리되었습니다.', parent.win_load)";
             jsExecute($Scripts);
 		}
 		else if($this->Params['mode']=='del_gift') {  // 상품권 삭제
@@ -639,7 +639,7 @@ class Basic extends BaseController
 				$RegData['reg_id']=$this->session->get('ss_mn_pid');
 				$this->promotion_model->insert($RegData);
 			}
-			$Scripts[] = "parent.alertBox('정상처리되었습니다.', parent.location.reload())";
+			$Scripts[] = "parent.alertBox('정상처리되었습니다.', parent.win_load)";
             jsExecute($Scripts);
 
 		}

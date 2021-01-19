@@ -101,7 +101,7 @@ function noticeDel(pid) {
             else if(resJson.msg) {
                 msg=resJson.msg;
 
-                alertBox(msg, location.reload());
+                alertBox(msg, win_load);
             }
         }
     });

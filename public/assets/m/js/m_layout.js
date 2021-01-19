@@ -20,38 +20,18 @@ $(function() {
 		$('.lnb_bg').fadeOut();
 	});
 
-	/* footer */
-	$("footer > ul > li").on("click", function(){				
-		$(this).parent("ul").children("li").removeClass("active");
-		$(this).addClass("active");
-
-		var tid = $(this).attr("id");
-        $.ajax({
-            type : 'GET',
-            url : tid + ".php",
-            dataType : "html",
-            error : function() {
-                alert("error");
-            },
-            success : function(data) {
-                $('.contents').html(data);
-            },
-            beforeSend:function(){
-                $('.loading').removeClass('hidden');
-            },
-            complete:function(){
-                $('.loading').addClass('hidden');
-            }
-        });
-	});
 }); // ready 끝
 
 /* date */
 $(document).on("click",".date",function(){    
+    var is_search = $(this).hasClass('search');
     $(".date").datepicker({
 		yearRange: 'c-100:c+10',
 		changeYear: true,
-		changeMonth: true
+        changeMonth: true,
+        onSelect: function(dateText) {
+            if(is_search) sendSearch();
+        }
 		/*
 		showOn: "button", 
 		buttonImage: "/common/img/button_calendar2.png", 
@@ -96,30 +76,30 @@ function lnb_close(){
 };
 
 // 모달팝업
-function modal(el){
-    var temp = $("#" + el); 
-    temp.modal({        
-        fadeDuration: 0,
-        escapeClose: false,
-        //clickClose: false,
-		showClose: false,
-		closeExisting: false		
-    });
+// function modal(el){
+//     var temp = $("#" + el); 
+//     temp.modal({        
+//         fadeDuration: 0,
+//         escapeClose: false,
+//         //clickClose: false,
+// 		showClose: false,
+// 		closeExisting: false		
+//     });
 
-    $('.modal_close').click(function(e){        
-        e.preventDefault();             
-        temp.hide();
-        $(this).closest(".blocker").click();
-    });
+//     $('.modal_close').click(function(e){        
+//         e.preventDefault();             
+//         temp.hide();
+//         $(this).closest(".blocker").click();
+//     });
 
-    temp.draggable({
-        handle: ".modal_header"
-    });     
-};
+//     temp.draggable({
+//         handle: ".modal_header"
+//     });     
+// };
 
 // url 인자 파싱
-function getUrlParams() {
-    var params = {};
-    window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(str, key, value) { params[key] = value; });
-    return params;
-}
+// function getUrlParams() {
+//     var params = {};
+//     window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(str, key, value) { params[key] = value; });
+//     return params;
+// }

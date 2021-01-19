@@ -21,7 +21,7 @@
                                     <input type="text" name="searchWord" class="mWt300" value="" placeholder="검색어" required />
 									<span>휴먼포함</span>
                             <label class="chkWrap"><input type="checkbox" name="searchDormant" value="Y" /><i></i></label>
-                                    <button type="submit" class="bt_navy ml10" onclick="">조회</button><br />
+                                    <button class="bt_navy ml10">조회</button><br />
                                 </div>
 
                                 <div class="mt5">
@@ -441,7 +441,7 @@
             dataParams.order='Y';
             dataParams.callback=callback;
         }
-        console.log(callback, dataParams);
+        // console.log(callback, dataParams);
 		gcUtil.loader('show', '#pop_dlist_area');
 		$.ajax({
 			data: dataParams,

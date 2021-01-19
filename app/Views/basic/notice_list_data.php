@@ -20,7 +20,7 @@
             if($row['bd_link']) echo '<a href="'.$row['bd_link'].'" onclick="event.cancelBubble=true" target="_blank"><i class="fa fa-link fa-1" aria-hidden="true"></i></a>';
             echo '</td>';
             echo '  <td>'.$row['mn_name'].'</td>';
-            echo '  <td>'.dateFormat('Y-m-d', $row['mn_out_date']).'</td>';
+            echo '  <td>'.dateFormat('Y-m-d', $row['reg_date']).'</td>';
             echo '  <td><button class="small set_button '.($row['rg_id']!=$setting['session']['ss_mn_pid']?'js-del-btn':'').'" style="background-color:#fa6b58" onclick="event.cancelBubble=true;confirmBox(\'정말 삭제하시겠습니까?\', noticeDel, \''.$row['bd_pid'].'\')">삭제</button></td>';
             echo '</tr>';
         }

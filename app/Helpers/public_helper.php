@@ -89,6 +89,7 @@ function link_url($url, $protocol='http', $addQuery='') {
 }
 
 function dateFormat($format='y/m/d H:i', $dateTime=null, $isKor=false){
+    if(is_null($dateTime) || substr($dateTime, 0, 4)=='0000') return false;
 	$dateTime=is_null($dateTime) ? time() : $dateTime;
 	if( !preg_match('/^([\d]{10,})/', $dateTime) ){
 		$dateTime=strtotime($dateTime);

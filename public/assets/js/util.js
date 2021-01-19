@@ -93,10 +93,18 @@ $.datepicker.setDefaults(getDatepickerDefaultOption());
 */
 function win_load(type) {
     var type = type || 'reload';
+    var return_url = return_url || '';
     if(type=='reload') top.location.reload();
     else if(type=='href') top.location.href=top.location.href;
     else if(type=='back') history.back();
+    else top.location.href=type;
 }
+
+function resultReList() {
+    sendSearch();
+    close_modal();
+}
+
 function setRadio(name, value) {
     $('input:radio[name="'+name+'"][value="'+value+'"]').prop('checked', true);
 }
@@ -284,4 +292,26 @@ function PopUpWindowNameOpen(surl, winName, popupwidth, popupheight, scrollbar, 
 	//HiddenWindow.resizeTo(parseInt(popupwidth)+10, parseInt(popupheight)+29);
 	HiddenWindow.focus();
 	return HiddenWindow;
+}
+
+// 모달팝업
+function pop_modal(el, is_close){
+    var is_close = is_close || 'Y';
+    var temp = $("#" + el); 
+    temp.modal({        
+        fadeDuration: 0,
+        escapeClose: false,
+        clickClose: false,
+        showClose: false,
+		closeExisting: is_close=='Y' ? true : false
+    });
+
+    temp.draggable({
+        handle: ".modal_header"
+    });     
+};
+
+function close_modal() {
+    // console.log('modal', $.modal.length, $.modal.getCurrent());
+    $.modal.getCurrent().close();
 }
