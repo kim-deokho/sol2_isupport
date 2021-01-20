@@ -18,7 +18,11 @@ $(function() {
 		$('.lnb').stop().animate({'left':'-62%'}, 300);
 		$('body').css('overflow','auto');
 		$('.lnb_bg').fadeOut();
-	});
+    });
+    
+    $('.input-comma').on('keyup', function(){
+        inputNumberAutoComma(this);
+    });
 
 }); // ready 끝
 

@@ -2,6 +2,8 @@ var cateCtr = {
     categorysJS : {}
     ,sel_categorys : {}
     ,subCategorys : {}
+    ,itemsJS : {}
+    ,item_selector : ''
     ,chgCategory : function(val, depth, targetName, prefix) {
         var targetName = targetName || 'search_categorys';
         var prefix = prefix || 'cate';
@@ -10,7 +12,7 @@ var cateCtr = {
             si = i+1;
 			
 			if(targetName == 'promotion') {
-				text = '카테고리선택';
+				text = si+'차카테고리';
 			} else {
 				text = '전체';
 			}
@@ -26,6 +28,8 @@ var cateCtr = {
                 else this.subCategorys=this.subCategorys[this.sel_categorys[i]];
             }
             this.makeSelect(prefix, depth);
+            // 해당 카테고리의 상품을 가져와 셋팅
+            if(this.item_selector) this.setItems(targetName);
         }
         
     }
@@ -51,6 +55,21 @@ var cateCtr = {
         this.sel_categorys[depth]=val;
         for(var n in this.sel_categorys) {
             if(n>depth) this.sel_categorys[n]='';
+        }
+    }
+    ,setItems : function(targetName) {
+        var select_category='';
+        $('.'+targetName).each(function(i){
+            select_category += $(this).val();
+        });
+        $('#'+this.item_selector+' option').remove();
+        $('#'+this.item_selector).append('<option value="">선택</option>');
+        for(var i in this.itemJS) {
+            let item = this.itemJS[i];
+            if(select_category==item['pt_tc_code'].substring(0, select_category.length)) {
+                let opt_value=item['pt_pid']+':'+addslashes(item['pt_name'])+':'+item['pt_out_price']+':'+item['pt_wages'];
+                $('#'+this.item_selector).append('<option value="'+opt_value+'">'+item['pt_name']+'</option>');
+            }
         }
     }
 }

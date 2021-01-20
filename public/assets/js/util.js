@@ -315,3 +315,14 @@ function close_modal() {
     // console.log('modal', $.modal.length, $.modal.getCurrent());
     $.modal.getCurrent().close();
 }
+
+function addslashes(string) {
+    return string.replace(/\\/g, '\\\\').
+        replace(/\u0008/g, '\\b').
+        replace(/\t/g, '\\t').
+        replace(/\n/g, '\\n').
+        replace(/\f/g, '\\f').
+        replace(/\r/g, '\\r').
+        replace(/'/g, '\\\'').
+        replace(/"/g, '\\"');
+}

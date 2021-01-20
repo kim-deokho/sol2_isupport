@@ -79,6 +79,8 @@ clearButton.addEventListener("click", function (event) {
   signaturePad.clear();
 });
 
+
+/*
 undoButton.addEventListener("click", function (event) {
   var data = signaturePad.toData();
 
@@ -123,3 +125,4 @@ saveSVGButton.addEventListener("click", function (event) {
     download(dataURL, "signature.svg");
   }
 });
+*/

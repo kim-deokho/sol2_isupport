@@ -7,6 +7,8 @@ use App\Models\MemberasModel;
 use App\Models\AssignasModel;
 use App\Models\AshistoryModel;
 use App\Models\CounselModel;
+use App\Models\PcmanageModel;
+use App\Models\PartModel;
 
 use App\Libraries\Fixcodes;
 
@@ -21,6 +23,8 @@ class Aservice extends \App\Controllers\BaseController
         $this->as_history_model = new AshistoryModel();
         $this->member_as_model = new MemberasModel();
         $this->counsel_model = new CounselModel();
+        $this->pcmanage_model = new PcmanageModel();
+        $this->part_model = new PartModel();
         $this->fix_codes = new Fixcodes();
     }
 
@@ -228,6 +232,14 @@ class Aservice extends \App\Controllers\BaseController
             $viewParams['session']=$this->session;
             $viewParams['return_url']='/m/aservice/progress_list';
             $viewParams['add_form_file']='detail_form_part_payment.php';
+
+            // 부품정보
+            $partCategorysJS=$this->pcmanage_model->getPartCategorys(array('type'=>'js'));
+            $partRows=$this->pcmanage_model->getPartsList(array('page'=>1));
+            $viewParams['partCategorysJS']=$partCategorysJS;
+            $viewParams['partRows']=$partRows;
+            // debug($partCategorysJS, $partRows);
+            // exit;
         }
         else {
             $view_file='m/as/progress_list';
@@ -275,6 +287,10 @@ class Aservice extends \App\Controllers\BaseController
             $code_data=$this->common_model->getCodeData(array('p_cd_code'=>$this->Params['code'], 'returnType'=>'pid'));
             
             echo json_encode($code_data);
+        }
+        else if($this->Params['mode']=='update_sign') {
+            $this->assign_as_model->update($this->Params['aa_pid'], array('aa_confirm_sign'=>$this->Params['sign']));
+            echo 'ok';
         }
     }
 
