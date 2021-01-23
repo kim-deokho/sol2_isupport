@@ -15,6 +15,7 @@
         <link rel="stylesheet" type="text/css" href="<?=CSS_DIR?>/select2.min.css">
 		<link rel="stylesheet" type="text/css" href="<?=M_CSS_DIR?>/common.css?ver=<?=$tDate?>">		
 		<link rel="stylesheet" type="text/css" href="<?=M_CSS_DIR?>/m_layout.css?ver=<?=$tDate?>">
+		<link rel="stylesheet" type="text/css" href="<?=M_CSS_DIR?>/my_custom.css?ver=<?=$tDate?>">
 
 		<script type="text/javascript" src="<?=M_JS_DIR?>/jquery-3.4.1.min.js"></script>
         <!-- <script type="text/javascript" src="<?=JS_DIR?>/jquery-1.12.4.min.js"></script> -->

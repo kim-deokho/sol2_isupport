@@ -9,6 +9,8 @@ use App\Models\AshistoryModel;
 use App\Models\CounselModel;
 use App\Models\PcmanageModel;
 use App\Models\PartModel;
+use App\Models\AssignpartModel;
+use App\Models\AssignthumbsModel;
 
 use App\Libraries\Fixcodes;
 
@@ -25,6 +27,8 @@ class Aservice extends \App\Controllers\BaseController
         $this->counsel_model = new CounselModel();
         $this->pcmanage_model = new PcmanageModel();
         $this->part_model = new PartModel();
+        $this->assign_part_model = new AssignpartModel();
+        $this->assign_thumbs_model = new AssignthumbsModel();
         $this->fix_codes = new Fixcodes();
     }
 
@@ -219,7 +223,7 @@ class Aservice extends \App\Controllers\BaseController
             $viewParams['use_state']=array('21', '31', '41');
 
             // 처리완료 처리시 처리가능한 상태값
-            $viewParams['use_result_state']=array('0000', '0318', '0317', '0316');
+            $viewParams['use_result_state']=array('0320', '0318', '0317', '0316');
             // 처리완료 처리 상세사유
             $use_result_code=array();
             if($viewParams['row']['aa_result_state']) $use_result_code=$this->common_model->getCodeData(array('p_cd_code'=>$viewParams['row']['aa_result_state'], 'returnType'=>'pid'));
@@ -240,6 +244,15 @@ class Aservice extends \App\Controllers\BaseController
             $viewParams['partRows']=$partRows;
             // debug($partCategorysJS, $partRows);
             // exit;
+
+            // 처리 부품목록
+            $viewParams['assignPartList']=$this->assign_part_model->where('aa_pid', $viewParams['row']['aa_pid'])->orderBy('ap_pid', 'desc')->findAll();
+            // debug($viewParams['assignPartList']);
+            // exit;
+            
+
+            // 첨부파일목록
+            $viewParams['thumbList']=$this->assign_thumbs_model->where('aa_pid', $viewParams['row']['aa_pid'])->orderBy('at_pid', 'desc')->findAll();
         }
         else {
             $view_file='m/as/progress_list';
@@ -288,14 +301,26 @@ class Aservice extends \App\Controllers\BaseController
             
             echo json_encode($code_data);
         }
-        else if($this->Params['mode']=='update_sign') {
+        else if($this->Params['mode']=='update_sign') { // 사인 업데이트
             $this->assign_as_model->update($this->Params['aa_pid'], array('aa_confirm_sign'=>$this->Params['sign']));
+            echo 'ok';
+        }
+        else if($this->Params['mode']=='delete_sign_part') { // 부품삭제
+            $this->assign_part_model->delete($this->Params['pid']);
+            echo 'ok';
+        }
+        else if($this->Params['mode']=='delete_sign_thumb') { // 첨부파일 삭제
+            $this->assign_thumbs_model->delete($this->Params['pid']);
             echo 'ok';
         }
     }
 
     function update_as() {
+        $Scripts=array();
         $dataParams=$this->Params;
+        // debug($dataParams);
+        // exit;
+
         if(!$dataParams['ma_is_hurryup']) $dataParams['ma_is_hurryup']='N';
         if($dataParams['aa_state']=='21') {   // 방문예정
             if(!$dataParams['aa_visit_date'] || !$dataParams['visit_hour'] || !$dataParams['visit_min']) {
@@ -318,6 +343,21 @@ class Aservice extends \App\Controllers\BaseController
             $dataParams['aa_result_reason']=null;
             $dataParams['aa_result_date']=null;
         }
+        if(!$dataParams['aa_payment_yn']) $dataParams['aa_payment_yn']='N'; // 입금확인
+
+        $dataParams['aa_payment_name']=null;
+        $dataParams['aa_bank_acc']=null;
+        $dataParams['aa_acount_num']=null;
+        if($dataParams['aa_payment_kind']=='C') {   // 카드결제
+            $dataParams['aa_payment_name']=$dataParams['card_name'];
+            $dataParams['aa_acount_num']=$dataParams['aa_acount_num'];
+        }
+        else if($dataParams['aa_payment_kind']=='B') {   // 무통장
+            $dataParams['aa_payment_name']=$dataParams['bank_name'];
+            $dataParams['aa_bank_acc']=$this->Params['aa_bank_acc'];
+        }
+        if($dataParams['aa_travel_price']) $dataParams['aa_travel_price']=str_replace(',', '', $dataParams['aa_travel_price']);
+        if($dataParams['aa_total_price']) $dataParams['aa_total_price']=str_replace(',', '', $dataParams['aa_total_price']);
 
         // as신청 업데이트
         $this->member_as_model->transBegin();
@@ -328,6 +368,7 @@ class Aservice extends \App\Controllers\BaseController
         $this->assign_as_model->transBegin();
         $this->assign_as_model->update($dataParams['aa_pid'], $dataParams);
 
+        
         // 로그
         $this->as_history_model->transBegin();
         $logData=array('aa_pid'=>$this->Params['aa_pid'], 'tah_state'=>$dataParams['aa_state'], 'tah_detail'=>$dataParams['aa_result_state'], 'tah_memo'=>serialize($datazParams), 'reg_id'=>$this->session->get('as_mn_pid'));
@@ -342,9 +383,53 @@ class Aservice extends \App\Controllers\BaseController
             $this->member_as_model->transRollback();
             $this->assign_as_model->transRollback();
             $this->as_history_model->transRollback();
+            $Scripts[] = "parent.alertBox('Database Error!')";
+            jsExecute($Scripts);
+            exit;
         }
 
-        
+        // 첨부 이미지
+        if($_FILES['files']) {
+            foreach($_FILES['files']['name'] as $fi=>$file_name) {
+                if(!$file_name) continue;
+                $file_title="첨부파일";
+                $upFile=getAWSFileName($file_name);
+                if($upFile['err_msg']) {
+                    $Scripts[] = "parent.alertBox('[".$file_title." 오류] 파일 업로드시 오류가 발생하였습니다.(".$upFile['err_msg'].")')";
+                    jsExecute($Scripts);
+                    exit;
+                }
+                $result=s3_upload($_FILES['files']['tmp_name'][$fi],  $upFile['file']);
+                $thumbData=array('aa_pid'=>$dataParams['aa_pid'],'thumb_img'=>$upFile['file']);
+                $this->assign_thumbs_model->insert($thumbData);                
+            }
+        }
+
+        // 처리 부품
+        if($dataParams['part']) {
+            $this->assign_part_model->transStart();
+            foreach($dataParams['part']['qty'] as $n_pt_pid=>$qty) {
+                $partData=array(
+                    'aa_pid'=>$dataParams['aa_pid']
+                    ,'pt_pid'=>$n_pt_pid
+                    ,'aa_part_name'=>$dataParams['part']['name'][$n_pt_pid]
+                    ,'aa_qty'=>$qty
+                    ,'aa_unit_price'=>$dataParams['part']['price'][$n_pt_pid]
+                    ,'aa_wages'=>$dataParams['part']['wages'][$n_pt_pid]
+                );
+                $partData['aa_price']=(floatval($partData['aa_unit_price'])+floatval($partData['aa_wages']))*$partData['aa_qty'];
+                if($dataParams['part']['pid'][$n_pt_pid]) {
+                    $this->assign_part_model->update($dataParams['part']['pid'][$n_pt_pid], $partData);
+                }
+                else {
+                    $partData['reg_id']=$this->session->get('as_mn_pid');
+                    $this->assign_part_model->insert($partData);
+                }
+            }
+            $this->assign_part_model->transComplete();
+        }
+
+        // 재방문(0318), 방문연기(0317)
         if(in_array($dataParams['aa_result_state'], array('0318', '0317'))) {
             $counsel_row=$this->counsel_model->find($dataParams['mc_pid']);
             $member_as_row=$this->member_as_model->find($dataParams['ma_pid']);

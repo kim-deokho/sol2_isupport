@@ -326,3 +326,8 @@ function addslashes(string) {
         replace(/'/g, '\\\'').
         replace(/"/g, '\\"');
 }
+
+function chgDisplay(val, show_val, target_id) {
+    if(val==show_val) $('#'+target_id).removeClass('hidden');
+    else $('#'+target_id).addClass('hidden');
+}

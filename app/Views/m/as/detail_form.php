@@ -165,7 +165,7 @@
                 </tbody>
             </table> <!-- itable_1 -->
 
-            <table class="result_box itable_1 mt10 hidden">
+            <table class="result_box itable_1 mt10 <?=$row['aa_result_state']?'':'hidden'?>">
                 <tbody>
                     <tr>
                         <th>처리</th>
@@ -212,6 +212,7 @@ $(document).ready(function() {
 });
 function getResultStateCode(code) {
     $('#aa_result_code option').remove();
+    
     $.ajax({
         url : '/m/aservice/ajax_request/get_code_data',
         data : {mode:'get_code_data', code:code},
@@ -222,6 +223,7 @@ function getResultStateCode(code) {
             for(var i in resJson) $('#aa_result_code').append('<option value="'+resJson[i]['cd_pid']+'">'+resJson[i]['cd_name']+'</option>');
         }
     });
+
 }
 function chgState(code) {
     if(code=='41') $('.result_box').removeClass('hidden');

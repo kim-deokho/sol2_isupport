@@ -30,30 +30,33 @@
         </tr>
         <tr>
             <td>
-                <div id="select_part_list"></div>
-                <!-- <div>
-                    <div>하부 조임 나사 BC12</div>
-                    <div>
-                        (15,000 / 5,000)
-                        <select name="" class="mWt50">
-                            <option value="">1</option>
-                        </select>
-                        <button type="button" class="bt_pd bt_black" onclick="">X</button>
-                    </div>
-                </div>
+                <div id="select_part_list">
+<?
+                $totAsignPartPrice=0;
+                $totAsignPartWages=0;
+                foreach($assignPartList as $apRow) {
+                    $partHtml='<div id="_id_part_'.$apRow['pt_pid'].'">';
+                    $partHtml.='    <div>'.$apRow['aa_part_name'].'</div>';
+                    $partHtml.='    <div>';
+                    $partHtml.='        ('.number_format($apRow['aa_unit_price']).' / '.number_format($apRow['aa_wages']).')';
+                    $partHtml.='        <select name="part[qty]['.$apRow['pt_pid'].']" class="part_qty_list mWt50" onchange="calcPartPay()">';
+                    for($i=1; $i<=10; $i++) $partHtml.='<option value="'.$i.'" '.($i==$apRow['aa_qty']?'selected':'').'>'.$i.'</option>';
+                    $partHtml.='        </select>';
+                    $partHtml.='        <button type="button" class="bt_pd bt_black" onclick="delPart(\''.$apRow['pt_pid'].'\', \''.$apRow['ap_pid'].'\')">X</button>';
+                    $partHtml.='    </div>';
+                    $partHtml.='    <input type="hidden" class="part_id_list" value="'.$apRow['pt_pid'].'">';
+                    $partHtml.='    <input type="hidden" class="part_pid_list" name="part[pid]['.$apRow['pt_pid'].']" value="'.$apRow['ap_pid'].'">';
+                    $partHtml.='    <input type="hidden" class="part_name_list" name="part[name]['.$apRow['pt_pid'].']" value="'.$apRow['aa_part_name'].'">';
+                    $partHtml.='    <input type="hidden" class="part_price_list" name="part[price]['.$apRow['pt_pid'].']" value="'.$apRow['aa_unit_price'].'">';
+                    $partHtml.='    <input type="hidden" class="part_wages_list" name="part[wages]['.$apRow['pt_pid'].']" value="'.$apRow['aa_wages'].'">';
+                    $partHtml.='</div>';
+                    $totAsignPartPrice += ($apRow['aa_unit_price']*$apRow['aa_qty']);
+                    $totAsignPartWages += ($apRow['aa_wages']*$apRow['aa_qty']);
+                    echo $partHtml;
+                }
+?>
 
-                <div>
-                    <div>
-                        하부 받침 WE-456
-                    </div>
-                    <div>
-                        (15,000 / 5,000)
-                        <select name="" class="mWt50">
-                            <option value="">1</option>
-                        </select>
-                        <button type="button" class="bt_pd bt_black" onclick="">X</button>
-                    </div>
-                </div> -->
+                </div>
             </td>                                
         </tr>                                    						
     </tbody>
@@ -64,16 +67,28 @@
         <tr>
             <th>사진첨부</th>
             <td>
-                <input name="files[]" type="file" multiple="multiple" class="multi with-preview" />
-                <button type="button" class="bt_pd bt_white_bor" onclick="">사진첨부</button>
+                <!-- <button type="button" class="bt_pd bt_white_bor" onclick="setFile()">사진첨부</button> -->
+                <input name="files[]" type="file" multiple="multiple" id="file_multi" class="with-preview" />
+                <ul class="thumb_list">
+<?
+                if(count($thumbList)>0) {
+                    foreach($thumbList as $tRow) {
+                        echo '<li id="_id_thumb_'.$tRow['at_pid'].'"><span><img src="'.IMG_DIR.'/btn_del.gif" style="width:auto;" onclick="delThumb(\''.$tRow['at_pid'].'\')"></span><img class="MultiFile-preview" src="'.AWS_UPLOAD_HOST.$tRow['thumb_img'].'"></li>';
+                    }
+                }
+?>                    
+                </ul>
             </td>                                
         </tr>
         <tr>
             <th>요금</th>
             <td>
                 <div>
-                    <select name="" class="">
-                        <option value="">유상</option>
+                    <select name="aa_pay_kind" id="aa_pay_kind" class="mWt100" onchange="chgPayKind(this.value)">
+<?                      foreach(array('P'=>'유상', 'F'=>'무상') as $k=>$v) echo '<option value="'.$k.'" '.($k==$row['aa_pay_kind']?'selected':'').'>'.$v.'</option>';?>
+                    </select>
+                    <select name="aa_free_year" id="aa_free_year" class="mWt100 hidden">
+<?                      for($i=1;$i<=10;$i++) echo '<option value="'.$i.'" '.($i==$row['aa_free_year']?'selected':'').'>'.$i.'년</option>';?>
                     </select>
                 </div>
 
@@ -88,16 +103,16 @@
                         </thead>
                         <tbody id="">
                             <tr>
-                                <td><span id="calc_out_price">0</span></td>
-                                <td><span id="calc_wages_price">0</span></td>
-                                <td class="txar"><input type="text" name="aa_travel_price" id="aa_travel_price" class="mWt100 txar input-comma" value="<?=$row['aa_travel_price']?>" placeholder="0" onkeyup="calcPartPay()" /></td>
+                                <td><span id="calc_out_price"><?=number_format($totAsignPartPrice)?></span></td>
+                                <td><span id="calc_wages_price"><?=number_format($totAsignPartWages)?></span></td>
+                                <td class="txar"><input type="text" name="aa_travel_price" id="aa_travel_price" class="mWt100 txar input-comma" value="<?=number_format($row['aa_travel_price'])?>" placeholder="0" onkeyup="calcPartPay()" /></td>
                             </tr>
                         </tbody>
                         <tfoot id="">
                             <tr>
                                 <td colspan="3" class="fw6 txar">
                                     합계 : 
-                                    <input type="text" name="aa_total_price" id="aa_total_price" class="mWt100 txar" value="<?=$row['aa_total_price']?>" readonly />
+                                    <input type="text" name="aa_total_price" id="aa_total_price" class="mWt100 txar" value="<?=number_format($row['aa_total_price'])?>" readonly />
                                 </td>
                             </tr>
                         </tfoot>
@@ -113,16 +128,16 @@
         <tr>
             <th>확인자</th>
             <td>
-                <input type="text" name="" class="mWt150" value="" />
-                <select name="" class="wAuto">
-                    <option value="">본인</option>
+                <input type="text" name="aa_confirm_name" class="mWt150" value="<?=$row['aa_confirm_name']?>" />
+                <select name="aa_confirm_kind" class="wAuto">
+<?                  foreach(array('M'=>'본인') as $k=>$v) echo '<option value="'.$k.'" '.($k==$row['aa_confirm_kind']?'selected':'').'>'.$v.'</option>';?>                    
                 </select>
             </td>                                
         </tr>
         <tr>
             <th>연락처</th>
             <td>
-                <input type="text" name="" class="mWt150" value="" />
+                <input type="text" name="aa_confirm_tel" class="mWt150" value="<?=$row['aa_confirm_tel']?>" />
             </td>                                
         </tr>
         <tr>
@@ -131,7 +146,7 @@
                 <div id="signature-pad" class="signature-pad">
                     <div class="signature-pad--body">
                         <canvas class="sign_set"></canvas>
-                        <img src="<?=$row['aa_confirm_sign']?>" class="sign_img">
+                        <div style="background:url('<?=$row['aa_confirm_sign']?>') no-repeat center;background-size:contain;width:100%;height:90px;" class="sign_img"></div>
                     </div>
                     <div class="signature-pad--footer">
                         <div class="signature-pad--actions">
@@ -149,33 +164,49 @@
             <th>결제정보</th>
             <td>
                 <div>
-                    <select name="" class="wAuto">
-                        <option value="">카드</option>
+                    <select name="aa_payment_kind" class="wAuto" onchange="chgPayType(this.value)">
+                        <option value="">- 선택 -</option>
+<?                      foreach(array('C'=>'카드', 'P'=>'현금', 'B'=>'무통장') as $k=>$v) echo '<option value="'.$k.'" '.($k==$row['aa_payment_kind']?'selected':'').'>'.$v.'</option>';?> 
                     </select>
-                    <select name="" class="wAuto">
-                        <option value="">삼성카드</option>
+                    <select name="card_name" id="card_name" class="wAuto pay_type_sub <?=$row['aa_payment_kind']=='C'?'':'hidden'?>">
+                        <option value="">- 선택 -</option>
+<?                      foreach($fix_codes->CardCompany as $k) echo '<option value="'.$k.'" '.($k==$row['aa_payment_name']?'selected':'').'>'.$k.'</option>';?>                        
                     </select>
+                    <input type="text" name="aa_acount_num" id="aa_acount_num" class="mWt100 pay_type_sub <?=$row['aa_payment_kind']=='C'?'':'hidden'?>" value="<?=$row['aa_acount_num']?>" placeholder="승인번호" />
+                    <input type="text" name="bank_name" id="bank_name" class="mWt60 pay_type_sub <?=$row['aa_payment_kind']=='B'?'':'hidden'?>" value="<?=$row['aa_payment_name']?>" placeholder="은행명" />
+                    <input type="text" name="aa_bank_acc" id="aa_bank_acc" class="mWt100 pay_type_sub <?=$row['aa_payment_kind']=='B'?'':'hidden'?>" value="<?=$row['aa_bank_acc']?>" placeholder="입금계좌" />
                 </div>
 
                 <div>
-                    <label class="chkWrap"><input type="checkbox" name="" value="" /><i></i><span>입금확인</span></label>
+                    <label class="chkWrap"><input type="checkbox" name="aa_payment_yn" value="Y" <?=$row['aa_payment_yn']=='Y'?'checked':''?> /><i></i><span>입금확인</span></label>
                 </div>
                 
-                <div>
+                <!-- <div>
                     <button type="button" class="bt_pd bt_red" onclick="">결제취소</button>
-                </div>
+                </div> -->
             </td>                                
         </tr>                                                     						
     </tbody>
 </table>
-<script type="text/javascript" src="<?=M_JS_DIR?>/lib/jquery.MultiFile.min.js"></script>
+<!-- <script type="text/javascript" src='<?=M_JS_DIR?>/lib/jquery.form.js'></script>
+<script type="text/javascript" src='<?=M_JS_DIR?>/lib/jquery.MetaData.js'></script> -->
+<script type="text/javascript" src="<?=M_JS_DIR?>/lib/jquery.MultiFile.js"></script>
 <script type="text/javascript" src="<?=M_JS_DIR?>/signature.js"></script>
 <script type="text/javascript" src="<?=JS_DIR?>/category.controller.js"></script>
 <script>
 cateCtr.categorysJS = <?=json_encode($partCategorysJS)?>;
 cateCtr.itemJS = <?=json_encode($partRows)?>;
 cateCtr.item_selector='select_part';
-
+$(function() {
+    $('#file_multi').MultiFile({
+        onFileChange: function(){
+			console.log('TEST CHANGE:', this, arguments);
+		}
+        ,STRING : {
+            remove: '<img src="<?=IMG_DIR?>/btn_del.gif" style="width:auto">'
+        }
+    });
+})
 
 if('<?=$row['aa_confirm_sign']?>'=='') {
     $('.sign_set').removeClass('hidden');
@@ -199,6 +230,7 @@ function signCancel() {
     saveSign();
     $('.sign_set').removeClass('hidden');
     $('.sign_img').addClass('hidden');
+    $('img.sign_img').remove();
 }
 
 function saveSign(sign) {
@@ -219,9 +251,14 @@ function saveSign(sign) {
 }
 
 function setPart(val) {
+    if(!val) return false;
     let is_exists=false;
+    // console.log($('.part_id_list').html());
     $('.part_id_list').each(function(){
-        if($(this).val()!==val) return true;
+        let exp_pid=val.split(':');
+        let pid = exp_pid[0];
+
+        if(pid!=$(this).val()) return true;
         is_exists=true;
         return false;
     });
@@ -255,31 +292,88 @@ function setPart(val) {
     calcPartPay();
 }
 
-function delPart(pid) {
-    $('#_id_part_'+pid).remove();
-    calcPartPay();
+function delPart(pt_pid, pid) {
+    var pid = pid || '';
+    $('#_id_part_'+pt_pid).remove();
+    if(pid) {
+        $.ajax({
+            url : '/m/aservice/ajax_request',
+            data : {mode:'delete_sign_part', pid:pid},
+            type: "POST",
+            cache: false,
+            dataType:'html',
+            success: function(res) {
+                if(res=='ok') calcPartPay();
+                else alertBox('삭제 오류!');
+            }
+            ,error: function() {
+                alertBox('Error');
+            }
+        });
+    }
+    else calcPartPay();
 }
 
 function calcPartPay() {
     let calc_out_price=0;
     let calc_wages_price=0;
     let travel_price = $('#aa_travel_price').val() ? $('#aa_travel_price').val() : '0';
-    console.log('travel_price', travel_price);
+    // console.log('travel_price', travel_price);
     travel_price = travel_price.replace(/,/g, '');
     $('.part_price_list').each(function(i){
         let price = $(this).val() ? parseFloat($(this).val()) : 0;
-        console.log(i, price, $('.part_qty_list:eq('+i+')').val());
+        // console.log(i, price, $('.part_qty_list:eq('+i+')').val());
         calc_out_price += price * $('.part_qty_list:eq('+i+')').val();
     });
     $('.part_wages_list').each(function(i){
         let price = $(this).val() ? parseFloat($(this).val()) : 0;
-        console.log(i, price, $('.part_qty_list:eq('+i+')').val());
+        // console.log(i, price, $('.part_qty_list:eq('+i+')').val());
         calc_wages_price += price * $('.part_qty_list:eq('+i+')').val();
     });
-    console.log(calc_out_price, calc_wages_price, travel_price);
+    // console.log(calc_out_price, calc_wages_price, travel_price);
     let total_price = parseFloat(calc_out_price) + parseFloat(calc_wages_price) + parseFloat(travel_price);
     $('#calc_out_price').html(inputNumberWithComma(calc_out_price));
     $('#calc_wages_price').html(inputNumberWithComma(calc_wages_price));
     $('#aa_total_price').val(inputNumberWithComma(total_price));
+}
+
+function setFile() {
+    // console.log('click', $('#file_multi').length, $('#file_multi').html());
+    let file_cnt=$('input[name="files[]"]').length;
+    if(file_cnt==1) $('input[id="file_multi"]').click();
+    else $('input[id="file_multi_F'+(file_cnt-1)+'"]').click();
+}
+function chgPayKind(val) {
+    if(val=='F') $('#aa_free_year').removeClass('hidden');
+    else $('#aa_free_year').addClass('hidden');
+}
+function chgPayType(val) {
+    $('.pay_type_sub').addClass('hidden');
+    if(val=='C') {
+        $('#card_name').removeClass('hidden');
+        $('#aa_acount_num').removeClass('hidden');
+    }
+    else if(val=='B') {
+        $('#bank_name').removeClass('hidden');
+        $('#aa_bank_acc').removeClass('hidden');
+    }
+}
+function delThumb(pid) {
+    if(pid) {
+        $.ajax({
+            url : '/m/aservice/ajax_request',
+            data : {mode:'delete_sign_thumb', pid:pid},
+            type: "POST",
+            cache: false,
+            dataType:'html',
+            success: function(res) {
+                if(res=='ok') $('#_id_thumb_'+pid).remove();
+                else alertBox('삭제 오류!');
+            }
+            ,error: function() {
+                alertBox('Error');
+            }
+        });
+    }
 }
 </script>
