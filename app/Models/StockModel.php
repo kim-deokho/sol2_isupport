@@ -353,6 +353,7 @@ class StockModel extends BaseModel
 		if($options['searchEdate']) $builder->where('a.reg_date <=', $options['searchEdate']." 23:59:59");
 		if($options['searchSt']) $builder->where('a.pi_store', $options['searchSt']);
 		if($options['searchState']) $builder->where('a.pi_state', $options['searchState']);
+		if($options['searchKind']) $builder->where('a.pi_kind', $options['searchKind']);
 		if($options['searchMn']) $builder->where('a.pi_mn_pid', $options['searchMn']);
 		if($options['pi_pid']) $builder->where('a.pi_pid', $options['pi_pid']);
 		if($options['cate1']) $builder->where('c.pt_tc_pid1', $options['cate1']);

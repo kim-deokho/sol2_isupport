@@ -75,10 +75,13 @@
     include_once "pop_assig_person2.php"; // 기사배정
     include_once "pop_as_proc.php"; // AS 처리
     include_once "pop_disposal_parts.php"; // 부품폐기
+    include_once APPPATH."Views/customer/pop_adress_reg.php"; // 배송지등록
 ?>
+<script type="text/javascript" src="<?=M_JS_DIR?>/lib/jquery.MultiFile.js"></script>
 <script type="text/javascript">
 $(document).ready(function() {
-    // $('.js-single-selector').select2();
+    $('.js-single-selector').select2();
+    
 });
 sendSearch();
 
@@ -137,15 +140,145 @@ function asmSave() {
 }
 
 // 상품등록
-function as_proc(){
-    pop_modal('pop_as_proc');
-    // 사인 실행
-    $("#as_sign").signature();
+function as_view(ma_pid){
+    $.ajax({
+        url : '/delivery/detailAsAssignForm/'+ma_pid,
+        type: "POST",
+        cache: false,
+        dataType:'json',
+        success: function(resJson) {
+            var f = document.forms['asFrm'];
+            // console.log(resJson.row);
+            // return;
+            if(resJson.row.aa_pid) {
+                f.aa_pid.value = resJson.row.aa_pid;
+                f.ma_pid.value = resJson.row.ma_pid;
+                f.mc_pid.value = resJson.row.mc_pid;
+                f.mb_pid.value = resJson.row.mb_pid;
+            }
+
+            if(resJson.html) {
+                // $('#as_form_box').html('');
+                // $('#as_form_box').append(resJson.html);
+                $('#disposal_form_box').html('');
+                $('#as_form_box').html(resJson.html);
+                $('#pd_pid').trigger('change');
+                pop_modal('pop_as_proc');
+            }
+        }
+    });
 }
+
+
 
 // 부품폐기
-function disposal_parts(){
-    pop_modal('pop_disposal_parts');
+function disposal_parts(aa_pid){
+    $.ajax({
+        url : '/delivery/detailDisposalPartForm/'+aa_pid,
+        type: "POST",
+        cache: false,
+        dataType:'json',
+        success: function(resJson) {
+            console.log('res', resJson);
+            var f = document.forms['disFrm'];
+            if(resJson.aa_pid) {
+                f.aa_pid.value = resJson.aa_pid;
+                f.ds_pid.value = resJson.ds_pid;
+            }
+
+            if(resJson.html) {
+                $('#as_form_box').html('');
+                $('#disposal_form_box').html(resJson.html);
+                pop_modal('pop_disposal_parts');
+            }
+        }
+    });
 }
 
+function IsPayment(obj, pid) {
+    var payment_yn = obj.checked==true ? 'Y' : 'N';
+    $.ajax({
+        url : '/delivery/ajax_request/',
+        type: "POST",
+        data: {mode:'update_payment', payment_yn:payment_yn, pid:pid},
+        dataType:'html',
+        success: function(res) {
+            if(res!='ok') alertBox("처리 오류!");
+        }
+    });
+}
+
+
+// 배송지등록
+function adress_reg(callback){
+    list_dely(callback);
+    pop_modal('pop_adress_reg', callback ? 'N' : 'Y');
+}
+
+//배송지 목록
+function list_dely(callback) {
+
+    $("#bsf")[0].reset();
+    $("#dy_pid").val('');
+    var dataParams ={mode:'dely_list',mb_pid:document.forms['asFrm'].mb_pid.value};
+    if(callback) {
+        dataParams.order='Y';
+        dataParams.callback=callback;
+    }
+    // console.log(callback, dataParams);
+    gcUtil.loader('show', '#pop_dlist_area');
+    $.ajax({
+        data: dataParams,
+        type: "POST",
+        url: '/customer/ajax_request',
+        cache: false,
+        dataType:'json',
+        success: function(resJson) {
+            // console.log(resJson);
+            gcUtil.loader('hide', '#pop_dlist_area');
+            $('#pop_dlist_area').html(resJson.html);
+        }
+    });
+}
+
+function selectDelivery(target_id) {
+    var result = $('#'+target_id).data('select');
+    var f = document.forms['asFrm'];
+    f.ma_cut_name.value = result.dy_name ? result.dy_name : '';
+    f.ma_cut_tel.value = result.dy_tel ? result.dy_tel : '';
+    f.ma_cut_tel2.value = result.dy_tel2 ? result.dy_tel2 : '';
+    f.ca_post.value = result.dy_post ? result.dy_post : '';
+    f.ca_addr.value = result.dy_addr ? result.dy_addr : '';
+    f.ca_addr2.value = result.dy_addr2 ? result.dy_addr2 : '';
+    close_modal();
+}
+
+//배송지 삭제
+function del_dely(dy_pid) {
+    f = document.forms['bsf'];
+    f.dy_pid.value = dy_pid;
+    f.mode.value = 'del_dely';
+    f.submit();
+    f.mode.value = 'reg_dely';
+
+}
+
+//기본배송지 설정
+function basic_dely(dy_pid) {
+    f = document.forms['bsf'];
+    f.dy_pid.value = dy_pid;
+    f.mode.value = 'basic_dely';
+    f.submit();
+    f.mode.value = 'reg_dely';
+}
+
+function view_dely(dy_pid, dy_name, dy_tel1, dy_tel2, dy_post, dy_addr, dy_addr2) {
+    $("#dy_pid").val(dy_pid);
+    $("#dy_name").val(dy_name);
+    $("#dy_tel1").val(dy_tel1);
+    $("#dy_tel2").val(dy_tel2);
+    $("#dy_post").val(dy_post);
+    $("#dy_addr").val(dy_addr);
+    $("#dy_addr2").val(dy_addr2);
+}
 </script>

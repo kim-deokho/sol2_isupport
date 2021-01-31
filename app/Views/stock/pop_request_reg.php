@@ -25,8 +25,8 @@
 						<td><input type="text" name="" class=" mWt100 txac" value="<?=date('Y-m-d')?>" readonly/></td>
 						<th>구분</th>
 						<td>
-							<label class="radioWrap"><input type="radio" name="pi_kind" value="B" checked /><i></i><span>출고</span></label>
-							<label class="radioWrap ml20"><input type="radio" name="pi_kind" value="A"  /><i></i><span>반입</span></label>
+							<label class="radioWrap"><input type="radio" name="pi_kind" value="A" checked /><i></i><span>출고</span></label>
+							<label class="radioWrap ml20"><input type="radio" name="pi_kind" value="B"  /><i></i><span>반입</span></label>
 						</td>
 					</tr>
 					<tr>

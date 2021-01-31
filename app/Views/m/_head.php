@@ -5,7 +5,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
 		<meta name="HandheldFriendly" content="true">
 		<meta name="format-detection" content="telephone=no">
-		<title>ISUPPORT - 기사모바일</title>
+        <title>ISUPPORT - 기사모바일</title>
+        <link rel="shortcut icon" href="<?=M_IMG_DIR?>/favicon.ico">
 		<link rel="stylesheet" type="text/css" href="<?=M_CSS_DIR?>/reset.css">
 		<link rel="stylesheet" type="text/css" href="<?=M_CSS_DIR?>/jquery-ui.min.css">
 		<link rel="stylesheet" type="text/css" href="<?=M_CSS_DIR?>/jquery.modal.min.css">

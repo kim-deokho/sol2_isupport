@@ -34,7 +34,7 @@ $(document).on("click",".date",function(){
 		changeYear: true,
         changeMonth: true,
         onSelect: function(dateText) {
-            if(is_search) sendSearch();
+            // if(is_search) sendSearch();
         }
 		/*
 		showOn: "button", 

@@ -1,8 +1,8 @@
 $(function() {	
 	// 팝업창 드래그 설정
-	$(".layer_pop_wrap").draggable();	
+    $(".layer_pop_wrap").draggable();	
 
-	// 달력 한국어
+    // 달력 한국어
 	$.datepicker.setDefaults({
         dateFormat: 'yy-mm-dd',
         prevText: '이전 달',
@@ -26,8 +26,8 @@ $(function() {
 		buttonImageOnly: true
 		*/
 	});
-
-	$(".date").on('click',function(){
+    
+    $(".date").on('click',function(){
 		//var id_val = $(this).attr("id");
 		//$("#"+id_val).datepicker('show');
 		$(this).datepicker('show');
@@ -80,7 +80,6 @@ $(function() {
 		$("#m_tab" + a_num).fadeIn();
 	};
 }); // ready 끝
-
 
 
 // 경고창

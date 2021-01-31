@@ -94,7 +94,7 @@ span.multi_val {margin-left: 3px;vertical-align: middle;display: inline-block;he
 .input_box_type_s {width: 100%;}
 .input_box_type_s > .box_row {position:relative;}
 .input_box_type_s > .box_row > * {vertical-align:middle;}
-.input_box_type_s > .box_row > span {display:inline-block;height:26px;line-height:26px;background-color:#bfbfbf;padding:0px 16px;margin-top:-1px;font-size:13px;font-weight:600;border-radius:5px;}
+.input_box_type_s > .box_row > span.label {display:inline-block;height:26px;line-height:26px;background-color:#bfbfbf;padding:0px 16px;margin-top:-1px;font-size:13px;font-weight:600;border-radius:5px;}
 .input_box_type_s > .box_row > .po_right {position:absolute;top:0;right:0}
 .input_box_type_s > .po_right {position:absolute;top:12px;right:20px}
 

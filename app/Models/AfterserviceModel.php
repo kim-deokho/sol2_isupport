@@ -24,6 +24,8 @@ class AfterserviceModel extends BaseModel
                     (select mb_tel1 from tb_member where mb_pid=t2.mb_pid) mb_tel1,
                     (select mb_tel2 from tb_member where mb_pid=t2.mb_pid) mb_tel2,
                     (select mb_tel3 from tb_member where mb_pid=t2.mb_pid) mb_tel3,
+                    IF((select count(*) from tb_as_assign_part where aa_pid=t1.aa_pid) > 0, "Y", "N") assign_part_yn,
+                    IF((select count(*) from tb_part_disuse where aa_pid=t1.aa_pid) > 0, "Y", "N") disposal_yn,
                     t2.reg_date as request_date, 
                     t3.mc_pid, mc_contents
                 from
@@ -82,6 +84,41 @@ class AfterserviceModel extends BaseModel
         return $builder->get()->getResultArray();
     }
 
-    
+    function getDisposalPartList($options) {
+        $sql="
+            SELECT 
+                * 
+                ,(select ma_cut_name from tb_member_as where ma_pid=TT.ma_pid) ma_cut_name
+                ,(select ma_cut_tel from tb_member_as where ma_pid=TT.ma_pid) ma_cut_tel
+            FROM (
+                SELECT 
+                    t1.*
+                    ,t2.ds_date, t2.ds_memo
+                    ,(select ma_pid from tb_as_assign where t2.aa_pid=aa_pid) ma_pid
+                    ,(select mn_pid from tb_as_assign where t2.aa_pid=aa_pid) mn_pid
+                    ,(select aa_result_date from tb_as_assign where t2.aa_pid=aa_pid) aa_result_date
+                    -- ,t4.ma_cut_name, t4.ma_cut_tel
+                    ,t5.pt_tc_pid1, t5.pt_tc_pid2
+                FROM 
+                    tb_part_disuse_item t1 left join tb_part_disuse t2 on t1.ds_pid=t2.ds_pid left join tb_part t5 on t1.pt_pid=t5.pt_pid
+                WHERE
+                    t2.reg_id=".$this->dDB->escape($options['mn_pid'])."
+            ) TT
+                WHERE
+                    ds_date >= ".$this->dDB->escape($options['sdate'])." and ds_date <= ".$this->dDB->escape($options['edate'])."
+        ";
+        if($options['cate1']) $sql .= " and pt_tc_pid1=".$this->dDB->escape($options['cate1']);
+        if($options['cate2']) $sql .= " and pt_tc_pid2=".$this->dDB->escape($options['cate2']);
+        if($options['searchWord']) $sql .= " and pt_name like ".$this->dDB->escape('%'.$options['searchWord'].'%');
+        $rows = $this->dDB->query($sql)->getResultArray();
+        // debug($sql, $rows);
+        // exit;
+        $reuslt=array();
+        foreach($rows as $row) {
+            if(!$result[$row['ds_pid']]) $result[$row['ds_pid']]=$row;
+            $result[$row['ds_pid']]['parts'][]=array('pt_pid'=>$row['pt_pid'], 'pt_name'=>$row['pt_name'], 'qty'=>$row['di_qty']);
+        }
+        return $result;
+    }
     
 }

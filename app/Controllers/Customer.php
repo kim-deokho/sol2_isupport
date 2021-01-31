@@ -4,13 +4,20 @@ use App\Models\BasicModel;
 use App\Models\MbmanagerModel;
 use App\Models\MemberModel;
 use App\Models\TraderModel;
-use App\Models\Counselmodel;
+use App\Models\CounselModel;
 use App\Models\DeliveryModel;
 use App\Models\ProductModel;
 use App\Models\PcmanageModel;
 use App\Models\MemberasModel;
 use App\Models\AssignasModel;
 use App\Models\AshistoryModel;
+use App\Models\PartModel;
+use App\Models\AssignpartModel;
+use App\Models\AssignthumbsModel;
+use App\Models\PartdisuseModel;
+use App\Models\PartdisuseitemModel;
+use App\Models\ManagerModel;
+use App\Models\AfterserviceModel;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -21,11 +28,11 @@ class Customer extends BaseController
 {
     function __construct() {
         parent::init();
-		$trader_model = new TraderModel();
+		$this->trader_model = new TraderModel();
 		$this->basic_model = new BasicModel();
 		$this->mbm_model = new MbmanagerModel();
 		$this->member_model = new MemberModel();
-		$this->counsel_model = new Counselmodel();
+		$this->counsel_model = new CounselModel();
 		$this->delivery_model = new DeliveryModel();
         $this->product_model = new ProductModel();
         $this->pcmanage_model = new PcmanageModel();
@@ -33,10 +40,17 @@ class Customer extends BaseController
         $this->assign_as_model = new AssignasModel();
         $this->as_history_model = new AshistoryModel();
         $this->fix_codes = new Fixcodes();
+        $this->part_model = new PartModel();
+        $this->assign_part_model = new AssignpartModel();
+        $this->assign_thumbs_model = new AssignthumbsModel();
+        $this->part_disuse_model = new PartdisuseModel();
+        $this->part_disuse_item_model = new PartdisuseitemModel();
+        $this->manager_model = new ManagerModel();
+        $this->afterservice_model = new AfterserviceModel();
 
 
 		// 매입처
-        $this->setting['customer'] = $trader_model->where('ct_use', 'Y')->findAll();
+        $this->setting['customer'] = $this->trader_model->where('ct_use', 'Y')->findAll();
 		//가입경로
 		if(!$this->setting['code']['Inroot']) $this->setting['code']['Inroot'] = $this->common_model->getCodeData(array('p_cd_code'=>'0301', 'returnType'=>'pid'));
 		//전화종류
@@ -477,7 +491,7 @@ class Customer extends BaseController
         $this->_footer();
 	}
 
-	public function as_list()
+	public function _as_list()
 	{
 		$viewParams=$this->Params;
 
@@ -675,5 +689,147 @@ class Customer extends BaseController
         $writer = new Xlsx($spreadsheet);
         $writer->save('php://output');
         exit;
-	}
+    }
+    
+    public function as_list()
+	{
+        //AS구분
+        if(!$this->setting['code']['AsKind']) $this->setting['code']['AsKind']=$this->common_model->getCodeData(array('p_cd_code'=>'0314'));
+
+        // 매입처
+        $this->setting['customer'] = $this->trader_model->where('ct_use', 'Y')->findAll();
+        
+        $viewParams=$this->Params;
+        $viewParams['sdate']=date('Y').'-01-01';
+        $viewParams['edate']=date('Y-m-d');
+        $viewParams['setting']=$this->setting;
+        $viewParams['fix_codes']=$this->fix_codes;
+        $viewParams['cs_manager']=$this->manager_model->like('mn_work', 'cs')->findAll();
+        $viewParams['as_manager']=$this->manager_model->like('mn_work', 'as')->findAll();
+        $viewParams['categorys']=$this->pcmanage_model->getCategorys(array('type'=>'pid'));
+
+        // 부품정보
+        $partRows=$this->pcmanage_model->getPartsList(array('page'=>1), true);
+        $partCategorysJS=$this->pcmanage_model->getPartCategorys(array('type'=>'js'), $partRows);
+        $viewParams['partCategorysJS']=$partCategorysJS;
+        $viewParams['partRows']=$partRows;
+       
+        $this->_header();
+        echo view('customer/as_list', $viewParams);
+        $this->_footer();
+    }
+    
+    function as_list_data() {
+        //AS구분
+        if(!$this->setting['code']['AsKind']) $this->setting['code']['AsKind']=$this->common_model->getCodeData(array('p_cd_code'=>'0314', 'returnType'=>'pid'));
+        //AS부위
+        if(!$this->setting['code']['AsPart']) $this->setting['code']['AsPart']=$this->common_model->getCodeData(array('p_cd_code'=>'0312', 'returnType'=>'pid'));
+        //AS증상
+        if(!$this->setting['code']['AsSymptom']) $this->setting['code']['AsSymptom']=$this->common_model->getCodeData(array('p_cd_code'=>'0313', 'returnType'=>'pid'));
+
+        $this->Params['rcnt']=$this->paging_rcnt;
+        if(!$this->Params['date_type']) $this->Params['date_type']='request_date';
+        if(!$this->Params['sdate']) $this->Params['sdate']=date('Y').'-01-01';
+        if(!$this->Params['edate']) $this->Params['edate']=date('Ymd');
+        $viewParams=$this->Params;
+        $rows=$this->afterservice_model->getAfterserviceList($this->Params);
+        unset($this->Params['page']);
+        $totCnt=$this->afterservice_model->getAfterserviceList($this->Params);
+        $viewParams['totCnt']=$totCnt;
+        $viewParams['rows']=$rows;
+        $viewParams['num'] = $totCnt - (($viewParams['page']-1)*$viewParams['rcnt']);
+        $viewParams['setting']=$this->setting;
+        $viewParams['fix_codes']=$this->fix_codes;
+        $listHtml=view('customer/as_list_data', $viewParams);
+        echo json_encode(array('totCnt'=>$totCnt, 'rcnt'=>$viewParams['rcnt'], 'page'=>$viewParams['page'], 'html'=>$listHtml));
+    }
+
+    function as_list_excel() {
+        $this->Params['rcnt']=$this->paging_rcnt;
+        if(!$this->Params['date_type']) $this->Params['date_type']='request_date';
+        if(!$this->Params['sdate']) $this->Params['sdate']=date('Y').'-01-01';
+        if(!$this->Params['edate']) $this->Params['edate']=date('Ymd');
+        $viewParams=$this->Params;
+        $rows=$this->afterservice_model->getAfterserviceList($this->Params);
+        unset($this->Params['page']);
+        $totCnt=$this->afterservice_model->getAfterserviceList($this->Params);
+        
+        foreach($rows as $i=>$row) {
+            $datas[$i]['no']=$totCnt--;
+            $datas[$i]['request_date']=dateFormat('Y-m-d', $row['request_date']);
+            $datas[$i]['ma_code']=$row['ma_code'];
+            $datas[$i]['cs_manager_name']=$row['cs_manager_name'];
+            $datas[$i]['ma_cut_name']=$row['ma_cut_name'];
+            $datas[$i]['ma_cut_tel']=$row['ma_cut_tel'];
+            $datas[$i]['buy_com']='구매처';
+
+            $datas[$i]['ma_kind']=$this->setting['code']['AsKind'][$row['ma_kind']]['cd_name'];
+            $datas[$i]['ma_is_hurryup']=$row['ma_is_hurryup'];
+            $datas[$i]['aa_state']=$this->fix_codes->AsState[$row['aa_state']];
+            $datas[$i]['aa_result_state']=$this->fix_codes->AsResultState[$row['aa_result_state']];
+            $datas[$i]['as_manager_name']=$row['as_manager_name'];
+            $datas[$i]['visit_date']=($row['aa_visit_date']?$row['aa_visit_date'].' '.$row['aa_visit_time']:'');
+            $datas[$i]['aa_result_date']=dateFormat('Y-m-d', $row['aa_result_date']);
+            $datas[$i]['mc_contents']=$row['mc_contents'];
+            $datas[$i]['product_name']=$row['product_name'];
+            $datas[$i]['ma_part']=$this->setting['code']['AsPart'][$row['ma_part']]['cd_name'];
+            $datas[$i]['ma_symptom']=$this->setting['code']['AsSymptom'][$row['ma_symptom']]['cd_name'];
+            $datas[$i]['aa_total_price']=number_format($row['aa_total_price']);
+            $datas[$i]['aa_payment_yn']=$row['aa_payment_yn']?$row['aa_payment_yn']:'N';
+            $datas[$i]['cancel_reason']='취소/미처리 사유';
+        }
+
+        $cells = array(
+            'A' => array(15, 'no', 'No'),
+            'B' => array(15, 'request_date',  '요청일'),
+            'C' => array(50, 'ma_code', '접수번호'),
+            'D' => array(30, 'cs_manager_name', '상담자'),
+            'E' => array(50, 'ma_cut_name', '고객명'),
+            'F' => array(15, 'ma_cut_tel', '연락처'),
+            'G' => array(15, 'buy_com', '구매처'),
+            'H' => array(15, 'ma_kind', '구분'),
+            'I' => array(15, 'ma_is_hurryup', '긴급'),
+            'J' => array(15, 'aa_state', '상태'),
+            'K' => array(15, 'aa_result_state', '완료상태'),
+            'L' => array(15, 'as_manager_name', 'AS기사'),
+            'M' => array(15, 'visit_date', '방문일정'),
+            'N' => array(15, 'aa_result_date', '완료일'),
+            'O' => array(15, 'mc_contents', '상담내용'),
+            'P' => array(30, 'cancel_reason', '취소/미처리 사유'),
+            'Q' => array(15, 'product_name', '상품'),
+            'R' => array(15, 'ma_part', '부위'),
+            'S' => array(15, 'ma_symptom', '증상')
+        );
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        foreach ($cells as $key => $val) {
+            $cellName = $key.'1';
+
+            $sheet->getColumnDimension($key)->setWidth($val[0]);
+            $sheet->getRowDimension('1')->setRowHeight(25);
+            $sheet->setCellValue($cellName, $val[2]);
+            $sheet->getStyle($cellName)->getFont()->setBold(true);
+            $sheet->getStyle($cellName)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle($cellName)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+        }
+
+        for ($i = 2; $row = array_shift($datas); $i++) {
+            foreach ($cells as $key => $val) {
+                $cellName=$key.$i;
+                $sheet->setCellValue($cellName, $row[$val[1]]);
+            }
+        }
+
+        $filename = date('Ymd').'_as_list';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="'.$filename.'.xlsx"');
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
+        exit;
+        
+    }
 }

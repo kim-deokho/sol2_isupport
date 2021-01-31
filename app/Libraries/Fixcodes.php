@@ -44,4 +44,10 @@ class Fixcodes {
 
     // 카드사
     public $CardCompany=array('삼성카드', '현대카드', 'BC카드');
+
+    // 
+    public $disposalReasonCode=array(
+        '11'=>'파손'
+        ,'99'=>'기타'
+    );
 }

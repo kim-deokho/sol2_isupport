@@ -5,6 +5,7 @@ class BaseModel
     protected $dDB;
     function __construct() {
         $this->dDB = \Config\Database::connect();
+        if(!is_cli()) $this->session = \Config\Services::session();
     }
 
     //SQL_CALC_FOUND_ROWS를 활용한 리스트 목록수 구하는 함수

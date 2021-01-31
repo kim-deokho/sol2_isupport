@@ -96,7 +96,7 @@ function win_load(type) {
     var return_url = return_url || '';
     if(type=='reload') top.location.reload();
     else if(type=='href') top.location.href=top.location.href;
-    else if(type=='back') history.back();
+    else if(type=='back') top.history.back();
     else top.location.href=type;
 }
 

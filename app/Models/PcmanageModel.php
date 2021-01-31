@@ -208,9 +208,25 @@ class PcmanageModel extends BaseModel
     }
 
     // 부품관리
-    function getPartsList($options) {
+    function getPartsList($options, $stock_check=false, $user_id='') {
         // debug($options);
         $builder = $this->dDB->table('tb_part');
+        if($stock_check) {  // 재고로 등록된 부품
+            if($user_id) {  // AS기사의 재고가 있는 부품
+                $partsRows=$this->userStockPartList(array('mn_pid'=>$user_id));
+                // $partPid=array();
+                // foreach($partsRows as $pRow) {
+                //     array_push($partPid, $pRow['pt_pid']);
+                // }
+                // $pidData=array_unique($partPid);
+                $builder->whereIn('pt_pid', array_keys($partsRows));
+
+            }
+            else {
+                $builder->join('tb_stock', 'tb_part.pt_pid=tb_stock.pd_pid', 'right');
+                $builder->where(array('st_kind'=>'B', 'st_del'=>'N', 'st_qea >'=>0));
+            }
+        }
         if($options['select']) $builder->select($options['select'], false);
         if($options['pt_pid']) {
             $builder->where('pt_pid', $options['pt_pid']);
@@ -247,9 +263,17 @@ class PcmanageModel extends BaseModel
     }
 
     /* 부품카테고리 */
-    function getPartCategorys($options=array()) {
+    function getPartCategorys($options=array(), $partData='') {
         $builder = $this->dDB->table('tb_part_category');
-		if($options['where']) $builder->where($options['where'], null, false);
+        if($options['where']) $builder->where($options['where'], null, false);
+        if($partData) {
+            $categoryPid=array();
+            foreach($partData as $part) {
+                array_push($categoryPid, $part['pt_tc_pid1'], $part['pt_tc_pid2']);
+            }
+            $pidData=array_unique($categoryPid);
+            $builder->whereIn('tc_pid', $pidData);
+        }
 		$builder->orderBy('tc_code', 'asc');
         $rows = $builder->get()->getResultArray();
 		if($options['type']=='js') {
@@ -390,6 +414,31 @@ class PcmanageModel extends BaseModel
         $builder = $this->dDB->table('tb_part_category');
         $builder->set('reg_date', 'NOW()', false);
         $builder->update(array('tc_name'=>$params['name']), array('tc_code'=>$cate_id));
+        return $result;
+    }
+
+    function userStockPartList($options=array()) {
+        if(!$options['mn_pid']) $options['mn_pid']=$this->session->get('as_mn_pid');
+        $sql="
+            SELECT *, (apply_cnt-use_cnt-return_cnt) stock_cnt FROM (
+                select 
+                    t3.*, SUM(IF(pi_kind='A', ii_real_qea, 0)) apply_cnt,  SUM(IF(pi_kind='B', ii_real_qea, 0)) return_cnt , (select count(*) from tb_as_assign ta join tb_as_assign_part tb on ta.aa_pid=tb.aa_pid where ta.mn_pid=t1.pi_mn_pid and tb.pt_pid=t2.pt_pid) use_cnt 
+                from 
+                    tb_part_inout t1 join tb_part_inout_item t2 on t1.pi_pid=t2.pi_pid join tb_part t3 on t2.pt_pid=t3.pt_pid 
+                where 
+                    t1.pi_mn_pid=".$this->dDB->escape($options['mn_pid'])." and pi_del='N' and ii_del='N' and pi_result_confirm_yn='Y' group by pt_pid
+            ) TT
+            WHERE
+                (apply_cnt-use_cnt-return_cnt) > 0
+        ";
+        if($options['cate1']) $sql .= " AND pt_tc_pid=".$this->dDB->escape($options['cate1']);
+        if($options['cate2']) $sql .= " AND pt_tc_pid2=".$this->dDB->escape($options['cate2']);
+        if($options['searchWord']) $sql .= " AND pt_name like ".$this->dDB->escape('%'.$options['searchWord'].'%');
+        $rows = $this->dDB->query($sql)->getResultArray();
+        $result=array();
+        foreach($rows as $i=>$row) {
+            $result[$row['pt_pid']]=$row;
+        }
         return $result;
     }
     

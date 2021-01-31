@@ -7,6 +7,7 @@
 .dis_inb {display:inline-block;}
 .dis_in {display:inline;}
 .dis_bl {display:block;}
+.dis_n {display:none;}
 
 input:disabled {background-color:#f2f2f2;}
 
@@ -24,4 +25,12 @@ input:disabled {background-color:#f2f2f2;}
 /* datatable pagaing */
 .dataTables_wrapper .dataTables_paginate {float:none;text-align:center;}
 table.dataTable.no-footer {border-bottom:0;}
+
+/* Mutifile */
+.MultiFile-list {margin-top:10px;}
+.MultiFile-remove {vertical-align: top;width: 20px;}
+.MultiFile-title{display:none;}
+.MultiFile-preview {max-width: 100px;max-height: 100px;}
+.thumb_list li > span {padding-right:5px;}
+.thumb_list li > span img {vertical-align:top;}
 

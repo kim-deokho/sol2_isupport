@@ -18,6 +18,7 @@
             <div class="box_row mt10">
                 <span>고객명</span>
                 <input type="text" name="search_member" class="mWt180" placeholder="이름/연락처" value="<?=$search_member?>" />
+                <button type="submit" class="bt_pd bt_black">검색</button>
             </div> <!-- box_row -->
 
             <div class="box_row mt10">

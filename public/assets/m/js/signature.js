@@ -20,6 +20,7 @@ function resizeCanvas() {
   // some browsers report devicePixelRatio as less than 1
   // and only part of the canvas is cleared then.
   var ratio =  Math.max(window.devicePixelRatio || 1, 1);
+  
 
   // This part causes the canvas to be cleared
   canvas.width = canvas.offsetWidth * ratio;
@@ -32,6 +33,16 @@ function resizeCanvas() {
   // that the state of this library is consistent with visual state of the canvas, you
   // have to clear it manually.
   signaturePad.clear();
+}
+
+function fixSizeCanvas(width, height) {
+    var ratio =  Math.max(window.devicePixelRatio || 1, 1);
+
+    canvas.width = width * ratio;
+    canvas.height = height * ratio;
+    canvas.getContext("2d").scale(ratio, ratio);
+
+    signaturePad.clear();
 }
 
 // On mobile devices it might make more sense to listen to orientation change,

@@ -23,8 +23,6 @@
                         }
 ?>
                     </select>
-                    <!-- <input type="text" name="" class="bt2r" value="" placeholder="부품명" />
-                    <button type="button" class="bt_pd bt_black" onclick="">추가</button> -->
                 </div>
             </td>                                
         </tr>
@@ -188,8 +186,6 @@
         </tr>                                                     						
     </tbody>
 </table>
-<!-- <script type="text/javascript" src='<?=M_JS_DIR?>/lib/jquery.form.js'></script>
-<script type="text/javascript" src='<?=M_JS_DIR?>/lib/jquery.MetaData.js'></script> -->
 <script type="text/javascript" src="<?=M_JS_DIR?>/lib/jquery.MultiFile.js"></script>
 <script type="text/javascript" src="<?=M_JS_DIR?>/signature.js"></script>
 <script type="text/javascript" src="<?=JS_DIR?>/category.controller.js"></script>
@@ -287,7 +283,7 @@ function setPart(val) {
     partHtml+='    <input type="hidden" class="part_price_list" name="part[price]['+pt_pid+']" value="'+pt_price+'">';
     partHtml+='    <input type="hidden" class="part_wages_list" name="part[wages]['+pt_pid+']" value="'+pt_wages+'">';
     partHtml+='</div>';
-    $('#select_part_list').append(partHtml);
+    $('#select_part_list').prepend(partHtml);
 
     calcPartPay();
 }

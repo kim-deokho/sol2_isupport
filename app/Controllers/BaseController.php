@@ -46,7 +46,7 @@ class BaseController extends Controller
 	 */
 	public function initController(\CodeIgniter\HTTP\RequestInterface $request, \CodeIgniter\HTTP\ResponseInterface $response, \Psr\Log\LoggerInterface $logger)
 	{
-		// Do Not Edit This Line
+        // Do Not Edit This Line
         parent::initController($request, $response, $logger);
 
         $Params = $request->getPost() ? $request->getPost() : $request->getGet();
@@ -54,30 +54,20 @@ class BaseController extends Controller
         $this->Params = $Params;
         if(!is_cli()) {
             $this->session = \Config\Services::session();
-
+            $this->uri = service('uri');
             $exp_path=explode('/', $_SERVER['REQUEST_URI']);
-            if($exp_path[1]=='m') {
-                if(!$this->session->get('as_mn_pid')) {
-                    if($exp_path[2]!='auth') {
+            if($this->uri->getSegment(1)=='m') {
+                if(!$this->session->get('as_mn_pid') && !$this->request->isAJAX()) {
+                    if($this->uri->getSegment(2)!='auth') {
                         jsExecute('top.location.href="/m/auth/login"');
                         exit;
                     }
                 }
 
-                $this->uri = service('uri');
-                $this->bottom_navi=array(
-                    'aservice'=>array(
-                        'status_list'=>'배정현황'
-                        ,'going_list'=>'방문예정'
-                        ,'progress_list'=>'처리중'
-                        ,'complete_list'=>'처리완료'
-                    )
-                );
-
             }
             else {
-                if(!$this->session->get('isLogin')) {
-                    if($exp_path[1]!='auth') {
+                if(!$this->session->get('isLogin') && !$this->request->isAJAX()) {
+                    if($this->uri->getSegment(1)!='auth') {
                         jsExecute('top.location.href="/auth/login"');
                         exit;
                     }
@@ -183,7 +173,7 @@ class BaseController extends Controller
                         ,array('label'=>'처리완료', 'link'=>'complete_list')
                     )
                 )
-                ,'part'=>array(
+                ,'parts'=>array(
                     'label'=>'부품'
                     ,'sub'=>array(
                         array('label'=>'부품현황', 'link'=>'status_list')

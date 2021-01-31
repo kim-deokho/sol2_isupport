@@ -29,7 +29,7 @@
                 if($menu['sub']) {
                     echo '    <ul class="sub" '.($m_k==$setting['HostUri'][2]?'style="display:block;"':'').'">';
                     foreach($menu['sub'] as $s_menu) {
-                        echo '<li><a href="'.$s_menu['link'].'">'.$s_menu['label'].'</a></li>';
+                        echo '<li><a href="/m/'.$m_k.'/'.$s_menu['link'].'">'.$s_menu['label'].'</a></li>';
                     }
                     echo '    </ul>';
                 }

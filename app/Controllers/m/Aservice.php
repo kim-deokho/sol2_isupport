@@ -11,6 +11,9 @@ use App\Models\PcmanageModel;
 use App\Models\PartModel;
 use App\Models\AssignpartModel;
 use App\Models\AssignthumbsModel;
+use App\Models\PartdisuseModel;
+use App\Models\PartdisuseitemModel;
+
 
 use App\Libraries\Fixcodes;
 
@@ -30,6 +33,9 @@ class Aservice extends \App\Controllers\BaseController
         $this->assign_part_model = new AssignpartModel();
         $this->assign_thumbs_model = new AssignthumbsModel();
         $this->fix_codes = new Fixcodes();
+        $this->part_disuse_model = new PartdisuseModel();
+        $this->part_disuse_item_model = new PartdisuseitemModel();
+
     }
 
 	public function index()
@@ -84,13 +90,12 @@ class Aservice extends \App\Controllers\BaseController
             if(!$viewParams['sort']) $viewParams['sort']='desc';
         }
 
-        $footParams['bottom_navi']=$this->bottom_navi[$this->uri->getSegment(2)];
+        $this->_mheader();
+        $footParams['bottom_navi']=$this->setting['menus'][$this->uri->getSegment(2)]['sub'];
         $footParams['active_uri'] = $this->uri->getSegment(3);
         $footParams['default_uri'] = '/m/'.$this->uri->getSegment(2);
-
-        $this->_mheader();
         echo view($view_file, $viewParams);
-        echo view('m/as/_footer', $footParams);
+        echo view('m/_navi_footer', $footParams);
         $this->_mfooter();
     }
     
@@ -163,13 +168,12 @@ class Aservice extends \App\Controllers\BaseController
             if(!$viewParams['sort']) $viewParams['sort']='asc';
         }
 
-        $footParams['bottom_navi']=$this->bottom_navi[$this->uri->getSegment(2)];
+        $this->_mheader();
+        $footParams['bottom_navi']=$this->setting['menus'][$this->uri->getSegment(2)]['sub'];
         $footParams['active_uri'] = $this->uri->getSegment(3);
         $footParams['default_uri'] = '/m/'.$this->uri->getSegment(2);
-
-        $this->_mheader();
         echo view($view_file, $viewParams);
-        echo view('m/as/_footer', $footParams);
+        echo view('m/_navi_footer', $footParams);
         $this->_mfooter();
     }
     
@@ -238,8 +242,8 @@ class Aservice extends \App\Controllers\BaseController
             $viewParams['add_form_file']='detail_form_part_payment.php';
 
             // 부품정보
-            $partCategorysJS=$this->pcmanage_model->getPartCategorys(array('type'=>'js'));
-            $partRows=$this->pcmanage_model->getPartsList(array('page'=>1));
+            $partRows=$this->pcmanage_model->getPartsList(array('page'=>1), true, $this->session->get('as_mn_pid'));
+            $partCategorysJS=$this->pcmanage_model->getPartCategorys(array('type'=>'js'), $partRows);
             $viewParams['partCategorysJS']=$partCategorysJS;
             $viewParams['partRows']=$partRows;
             // debug($partCategorysJS, $partRows);
@@ -262,13 +266,12 @@ class Aservice extends \App\Controllers\BaseController
             if(!$viewParams['sort']) $viewParams['sort']='asc';
         }
 
-        $footParams['bottom_navi']=$this->bottom_navi[$this->uri->getSegment(2)];
+        $this->_mheader();
+        $footParams['bottom_navi']=$this->setting['menus'][$this->uri->getSegment(2)]['sub'];
         $footParams['active_uri'] = $this->uri->getSegment(3);
         $footParams['default_uri'] = '/m/'.$this->uri->getSegment(2);
-
-        $this->_mheader();
         echo view($view_file, $viewParams);
-        echo view('m/as/_footer', $footParams);
+        echo view('m/_navi_footer', $footParams);
         $this->_mfooter();
     }
     
@@ -294,6 +297,83 @@ class Aservice extends \App\Controllers\BaseController
         echo json_encode(array('totCnt'=>$totCnt, 'html'=>$listHtml));
     }
 
+    public function complete_list($id='')
+	{
+        $viewParams=$this->Params;
+        if($id) {
+            $view_file='m/as/disposal_form';
+            $queryParams['date_type']='request_date';
+            $queryParams['page']=1;
+            $queryParams['aa_pid']=$id;
+            $queryParams['search_as']=$this->session->get('as_mn_pid');
+            
+            $rows=$this->afterservice_model->getAfterserviceList($queryParams);
+            $viewParams['row']=$rows[0];
+
+            $viewParams['aa_pid']=$id;
+            // $viewParams['productRows']=$this->product_model->findAll();
+            
+            $viewParams['setting']=$this->setting;
+            $viewParams['fix_codes']=$this->fix_codes;
+            $viewParams['session']=$this->session;
+            $viewParams['return_url']='/m/aservice/complete_list';
+
+            //창고
+            if(!$this->setting['code']['Storage']) $this->setting['code']['Storage'] = $this->common_model->getCodeData(array('p_cd_code'=>'0501', 'returnType'=>'pid'));
+
+            // 부품정보
+            $partRows=$this->pcmanage_model->getPartsList(array('page'=>1));
+            $partCategorysJS=$this->pcmanage_model->getPartCategorys(array('type'=>'js'));
+            $viewParams['partCategorysJS']=$partCategorysJS;
+            $viewParams['partRows']=$partRows;
+            // debug($partCategorysJS, $partRows);
+            // exit;
+
+            // 처리 부품목록
+            $viewParams['assignPartList']=$this->assign_part_model->where('aa_pid', $id)->orderBy('ap_pid', 'desc')->findAll();
+        }
+        else {
+            $view_file='m/as/complete_list';
+            if(!$viewParams['sdate']) $viewParams['sdate']=date('Y-m-d');
+            if(!$viewParams['edate']) $viewParams['edate']=date('Y-m-d');
+            if(!$viewParams['date_type']) $viewParams['date_type']='aa_result_date';
+            if(!$viewParams['sort']) $viewParams['sort']='desc';
+        }
+
+        $viewParams['setting']=$this->setting;
+
+        $this->_mheader();
+        $footParams['bottom_navi']=$this->setting['menus'][$this->uri->getSegment(2)]['sub'];
+        $footParams['active_uri'] = $this->uri->getSegment(3);
+        $footParams['default_uri'] = '/m/'.$this->uri->getSegment(2);
+        echo view($view_file, $viewParams);
+        echo view('m/_navi_footer', $footParams);
+        $this->_mfooter();
+    }
+    
+    function complete_list_data() {
+        $viewParams=$this->Params;
+        $viewParams['search_as']=$this->session->get('as_mn_pid');
+        $viewParams['search_state']='41';
+
+        if(!$viewParams['sdate']) $viewParams['sdate']=date('Y-m-d');
+        if(!$viewParams['edate']) $viewParams['edate']=date('Y-m-d');
+        if(!$viewParams['date_type']) $viewParams['date_type']='aa_result_date';
+        if(!$viewParams['sort']) $viewParams['sort']='asc';
+        
+
+        $totCnt=$this->afterservice_model->getAfterserviceList($viewParams);
+        $viewParams['page']=1;
+        $rows=$this->afterservice_model->getAfterserviceList($viewParams);
+        $viewParams['totCnt']=$totCnt;
+        $viewParams['rows']=$rows;
+
+        $listHtml = view('m/as/complete_list_data', $viewParams);
+
+        echo json_encode(array('totCnt'=>$totCnt, 'html'=>$listHtml));
+    }
+
+    
     //ajax용 처리
 	function ajax_request() {
 		if($this->Params['mode']=='get_code_data') {
@@ -448,7 +528,7 @@ class Aservice extends \App\Controllers\BaseController
             
 
             // AS관리(기사)코드
-            $row = $this->member_as_row->selectMax('ma_code')->where('left(reg_date, 10)', date("Y-m-d"))->find()[0];
+            $row = $this->member_as_model->selectMax('ma_code')->where('left(reg_date, 10)', date("Y-m-d"))->find()[0];
             if($row == ""){
                 $sn = "0001";
             } else {
@@ -489,5 +569,42 @@ class Aservice extends \App\Controllers\BaseController
 
         jsExecute('parent.alertBox("정상적으로 처리되었습니다.", parent.win_load, "'.$this->Params['return_url'].'")');
 
+    }
+
+    function reg_disposal_part() {
+        // debug($this->Params);
+        $dataParams=$this->Params;
+        $dataParams['reg_id']=$this->session->get('as_mn_pid');
+        if($dataParams['aa_pid']=='reg') {
+            unset($dataParams['aa_pid']);
+            if($dataParams['ma_code']) {
+                $row=$this->member_as_model->select('*, (select aa_pid from tb_as_assign where tb_member_as.ma_pid=ma_pid) as aa_pid')->where('ma_code', $dataParams['ma_code'])->first();
+                if($row['aa_pid']) $dataParams['aa_pid']=$row['aa_pid'];
+                else {
+                    jsExecute('parent.alertBox("입력한 AS접수번호가 존재하지 않습니다.")');
+                    exit;
+                }
+            }
+        }
+        $insert_id=$this->part_disuse_model->insert($dataParams);
+
+        // 처리 부품
+        if($dataParams['part']) {
+            $this->part_disuse_item_model->transStart();
+            foreach($dataParams['part']['qty'] as $n_pt_pid=>$qty) {
+                $partData=array(
+                    'ds_pid'=>$insert_id
+                    ,'pt_pid'=>$n_pt_pid
+                    ,'pt_name'=>$dataParams['part']['name'][$n_pt_pid]
+                    ,'di_qty'=>$qty
+                    ,'di_store'=>$dataParams['part']['store'][$n_pt_pid]
+                    ,'di_reason_code'=>$dataParams['part']['reason'][$n_pt_pid]
+                );
+                $partData['reg_id']=$this->session->get('as_mn_pid');
+                $this->part_disuse_item_model->insert($partData);
+            }
+            $this->part_disuse_item_model->transComplete();
+        }
+        jsExecute('parent.alertBox("정상적으로 처리되었습니다.", parent.win_load, "'.$this->Params['return_url'].'")');
     }
 }

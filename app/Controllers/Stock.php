@@ -2122,7 +2122,7 @@ debug($stock);
 		$this->Params['rcnt'] = $this->paging_rcnt;
 		$this->Params['page'] = $this->Params['page'] ? $this->Params['page'] : 1;
 
-        $this->Params['searchKind']="B";
+        // $this->Params['searchKind']="B";
 		$viewParams=$this->Params;
         $rows=$this->stock_model->getStockPartRequstList($this->Params);
 		//debug($this->stock_model);
