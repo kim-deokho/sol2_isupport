@@ -38,7 +38,7 @@
             echo '  <td>'.$row['cs_manager_name'].'</td>';
             echo '  <td>'.$row['ma_cut_name'].'</td>';
             echo '  <td>'.$row['ma_cut_tel'].'</td>';
-            echo '  <td>구매처</td>';
+            echo '  <td>'.($row['ord_buy']?$row['ord_buy']:$row['ma_order_memo']).'</td>';
             echo '  <td>'.$setting['code']['AsKind'][$row['ma_kind']]['cd_name'].'</td>';
             echo '  <td>'.$row['ma_is_hurryup'].'</td>';
 

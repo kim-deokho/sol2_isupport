@@ -58,6 +58,7 @@ function SaveUpdate() {
         cache: false,
         dataType:'json',
         success: function(resJson) {
+            console.log('res', resJson);
             if(resJson.err_msg) {
                 alertBox(resJson.err_msg);
             }

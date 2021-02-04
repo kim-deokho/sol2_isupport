@@ -48,7 +48,7 @@
                 <button type="submit" class="bt_navy ml10">조회</button>
 
                 <div class="po_right">
-                    <button type="button" class="bt_black ml10" onclick="alert('요청취소????')">요청취소</button>
+                    <button type="button" class="bt_black ml10" onclick="cancelAS()">요청취소</button>
                     <button type="button" class="bt_green ml10 js-excel-btn" onclick="listExcel()">EXCEL</button>
                 </div> <!-- po_right // 오른쪽 버튼 -->
             </div> <!-- box_row -->
@@ -64,6 +64,7 @@
 </section>
 <?
     include_once APPPATH."Views/delivery/pop_as_proc.php"; // AS 처리
+    include_once "pop_as_cancel_form.php"; // 요청취소 폼
 ?>
 <script type="text/javascript" src="<?=M_JS_DIR?>/lib/jquery.MultiFile.js"></script>
 <script type="text/javascript">
@@ -173,5 +174,17 @@ function view_dely(dy_pid, dy_name, dy_tel1, dy_tel2, dy_post, dy_addr, dy_addr2
     $("#dy_post").val(dy_post);
     $("#dy_addr").val(dy_addr);
     $("#dy_addr2").val(dy_addr2);
+}
+
+function cancelAS() {
+    var chk_val=getCheckbox('pid');
+    if(!chk_val) {
+        alertBox("처리 할 상품을 선택해주세요.");
+        return false;
+    }
+    pop_modal('pop_as_cancel');
+    document.forms['cFrm'].pids.value=chk_val;
+    
+
 }
 </script>

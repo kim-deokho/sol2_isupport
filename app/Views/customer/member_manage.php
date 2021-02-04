@@ -646,6 +646,8 @@
     }
     
     function setProduct(pid) {
+        console.log(pid);
+        gcUtil.loader('show', '#as_product');
 		$.ajax({
 			url : '/product/ajax_request',
 			data : {mode:'get_product', 'pid':pid},
@@ -674,6 +676,7 @@
                     resHtml += '</tr>';
                 }
                 $('#as_product tbody').html(resHtml);
+                gcUtil.loader('hide', '#as_product');
 			}
 		});
 

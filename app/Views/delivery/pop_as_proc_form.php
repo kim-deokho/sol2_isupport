@@ -290,7 +290,7 @@
                                 <option value="">- 선택 -</option>
 <?                              foreach(array('P'=>'유상', 'F'=>'무상') as $k=>$v) echo '<option value="'.$k.'" '.($k==$row['aa_pay_kind']?'selected':'').'>'.$v.'</option>';?>
                             </select>
-                            <select name="aa_free_year" id="aa_free_year" class="mWt100 dis_n">
+                            <select name="aa_free_year" id="aa_free_year" class="mWt100 <?=$row['aa_pay_kind']=='F'?'':'dis_n'?>">
 <?                              for($i=1;$i<=10;$i++) echo '<option value="'.$i.'" '.($i==$row['aa_free_year']?'selected':'').'>'.$i.'년</option>';?>
                             </select>
                         </div>
@@ -373,7 +373,7 @@
                                 <div class="signature-pad--actions">
                                     <div>
                                         <button type="button" class="bt_100_32 bt_blue sign_set" data-action="clear">지우기</button>
-                                        <button type="button" class="bt_100_32 bt_dark sign_set" data-action="save-png">저장</button>
+                                        <button type="button" class="bt_100_32 bt_dark sign_set" data-action="save-png">서명저장</button>
                                         <button type="button" class="bt_100_32 bt_gray sign_img" onclick="signCancel()">서명취소</button>
                                     </div>                            
                                 </div>
@@ -488,7 +488,7 @@ function saveSign(sign) {
         cache: false,
         dataType:'html',
         success: function(res) {
-            if(res=='ok' && sign) alertBox('저장되었습니다.');
+            if(res=='ok' && sign) alertBox('서명이 저장되었습니다.');
         }
         ,error: function() {
             alertBox('Error');
@@ -573,8 +573,10 @@ function calcPartPay() {
         // console.log(i, price, $('.part_qty_list:eq('+i+')').val());
         calc_wages_price += price * $('.part_qty_list:eq('+i+')').val();
     });
-    console.log($('.part_price_list').length, calc_out_price, calc_wages_price, travel_price);
     let total_price = parseFloat(calc_out_price) + parseFloat(calc_wages_price) + parseFloat(travel_price);
+    if($('#aa_pay_kind').val()=='F') {
+        total_price=0;
+    }
     $('#calc_out_price').html(inputNumberWithComma(calc_out_price));
     $('#calc_wages_price').html(inputNumberWithComma(calc_wages_price));
     $('#aa_total_price').val(inputNumberWithComma(total_price));
@@ -589,9 +591,9 @@ function setFile() {
 function chgPayKind(val) {
     if(val=='F') $('#aa_free_year').removeClass('dis_n');
     else $('#aa_free_year').addClass('dis_n');
+    calcPartPay();
 }
 function chgPayType(val) {
-    console.log('val', val);
     $('.pay_type_sub').addClass('dis_n');
     if(val=='C') {
         $('#card_name').removeClass('dis_n');

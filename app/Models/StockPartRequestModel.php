@@ -12,7 +12,7 @@ class StockPartRequestModel extends Model
     protected $returnType = 'array';
     protected $useSoftDeletes = false;
 
-    protected $allowedFields = ['pi_kind', 'pi_store', 'pi_memo', 'pi_mn_pid', 'pi_del', 'pi_state', 'pi_confirm_date', 'reg_id', 'reg_date', 'up_id', 'up_date'];
+    protected $allowedFields = ['pi_kind', 'pi_store', 'pi_memo', 'pi_mn_pid', 'pi_del', 'pi_state', 'pi_confirm_date', 'pi_result_confirm_yn', 'reg_id', 'reg_date', 'up_id', 'up_date'];
 
     protected $useTimestamps = true;
     protected $createdField  = 'reg_date';

@@ -311,7 +311,33 @@ class Customer extends BaseController
             $Scripts[] = "parent.alertBox('".$msg."', parent.regAsComplete)";
 
         }
+        else if($this->Params['mode']=='update_as_cancel') {
+            $this->assign_as_model->transBegin();
+            $exp_pid=explode(',', $this->Params['pids']);
+            $upData=$this->Params;
+            $upData['up_id']=$this->session->get('ss_mn_pid');
+            $this->assign_as_model->update($exp_pid, $upData);
 
+            // 로그
+            $this->as_history_model->transBegin();
+            foreach($exp_pid as $aa_pid) {
+                $logState=$this->Params['aa_result_state'];
+                $logData=array('aa_pid'=>$aa_pid, 'tah_state'=>$this->Params['aa_state'], 'tah_detail'=>$this->Params['aa_result_state'], 'tah_memo'=>$this->Params['aa_result_reason'], 'reg_id'=>$this->session->get('ss_mn_pid'));
+                $this->as_history_model->insert($logData);
+            }
+            if ($this->assign_as_model->transStatus() === FALSE || $this->as_history_model->transStatus() === FALSE) {
+                $this->assign_as_model->transRollback();
+                $this->as_history_model->transRollback();
+                $msg="처리 오류 발생";
+            }
+            else {
+                $this->assign_as_model->transCommit();
+                $this->as_history_model->transCommit();
+                $msg="정상처리되었습니다.";
+            }
+            $Scripts[] = "parent.alertBox('".$msg."', parent.win_load, 'href')";
+
+        }
 		jsExecute($Scripts);
 		exit;
 	}
@@ -696,6 +722,9 @@ class Customer extends BaseController
         //AS구분
         if(!$this->setting['code']['AsKind']) $this->setting['code']['AsKind']=$this->common_model->getCodeData(array('p_cd_code'=>'0314'));
 
+        //AS취소사유
+        if(!$this->setting['code']['AsCancelType']) $this->setting['code']['AsCancelType']=$this->common_model->getCodeData(array('p_cd_code'=>'0315', 'returnType'=>'pid'));
+
         // 매입처
         $this->setting['customer'] = $this->trader_model->where('ct_use', 'Y')->findAll();
         
@@ -745,6 +774,13 @@ class Customer extends BaseController
     }
 
     function as_list_excel() {
+        //AS구분
+        if(!$this->setting['code']['AsKind']) $this->setting['code']['AsKind']=$this->common_model->getCodeData(array('p_cd_code'=>'0314', 'returnType'=>'pid'));
+        //AS부위
+        if(!$this->setting['code']['AsPart']) $this->setting['code']['AsPart']=$this->common_model->getCodeData(array('p_cd_code'=>'0312', 'returnType'=>'pid'));
+        //AS증상
+        if(!$this->setting['code']['AsSymptom']) $this->setting['code']['AsSymptom']=$this->common_model->getCodeData(array('p_cd_code'=>'0313', 'returnType'=>'pid'));
+
         $this->Params['rcnt']=$this->paging_rcnt;
         if(!$this->Params['date_type']) $this->Params['date_type']='request_date';
         if(!$this->Params['sdate']) $this->Params['sdate']=date('Y').'-01-01';
@@ -769,14 +805,14 @@ class Customer extends BaseController
             $datas[$i]['aa_result_state']=$this->fix_codes->AsResultState[$row['aa_result_state']];
             $datas[$i]['as_manager_name']=$row['as_manager_name'];
             $datas[$i]['visit_date']=($row['aa_visit_date']?$row['aa_visit_date'].' '.$row['aa_visit_time']:'');
-            $datas[$i]['aa_result_date']=dateFormat('Y-m-d', $row['aa_result_date']);
+            $datas[$i]['aa_result_date']=$row['aa_result_date']?dateFormat('Y-m-d', $row['aa_result_date']):'';
             $datas[$i]['mc_contents']=$row['mc_contents'];
             $datas[$i]['product_name']=$row['product_name'];
             $datas[$i]['ma_part']=$this->setting['code']['AsPart'][$row['ma_part']]['cd_name'];
             $datas[$i]['ma_symptom']=$this->setting['code']['AsSymptom'][$row['ma_symptom']]['cd_name'];
             $datas[$i]['aa_total_price']=number_format($row['aa_total_price']);
             $datas[$i]['aa_payment_yn']=$row['aa_payment_yn']?$row['aa_payment_yn']:'N';
-            $datas[$i]['cancel_reason']='취소/미처리 사유';
+            $datas[$i]['result_reason']=$row['aa_result_reason'];
         }
 
         $cells = array(
@@ -795,7 +831,7 @@ class Customer extends BaseController
             'M' => array(15, 'visit_date', '방문일정'),
             'N' => array(15, 'aa_result_date', '완료일'),
             'O' => array(15, 'mc_contents', '상담내용'),
-            'P' => array(30, 'cancel_reason', '취소/미처리 사유'),
+            'P' => array(30, 'result_reason', '취소/미처리 사유'),
             'Q' => array(15, 'product_name', '상품'),
             'R' => array(15, 'ma_part', '부위'),
             'S' => array(15, 'ma_symptom', '증상')

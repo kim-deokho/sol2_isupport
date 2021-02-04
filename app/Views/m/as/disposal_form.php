@@ -27,7 +27,7 @@
                         <div>
                             <select name="cate1" id="cate1" class="wAuto promotion" onchange="cateCtr.chgCategory(this.value, 1, 'promotion')">
                                 <option value="">1차카테고리</option>
-        <?                      foreach($partCategorysJS as $code=>$cate) echo '<option value="'.$code.'">'.$cate['name'].'</option>';?>
+<?                              foreach($partCategorysJS as $code=>$cate) echo '<option value="'.$code.'">'.$cate['name'].'</option>';?>
                             </select>
                             <select name="cate2" id="cate2" class="wAuto promotion" onchange="cateCtr.chgCategory(this.value, 2, 'promotion')">
                                 <option value="">2차카테고리</option>
@@ -37,12 +37,12 @@
                         <div>
                             <select class="js-single-selector" name="select_part" id="select_part" class="bt2r" style="width:100%;" onchange="setPart(this.value)">
                                 <option value="">선택</option>
-        <?                      
+<?                      
                                 foreach($partRows as $p_row) {
                                     $p_value=$p_row['pt_pid'].':'.addslashes($p_row['pt_name']);
                                     echo '<option value="'.$p_value.'">'.$p_row['pt_name'].'</option>';
                                 }
-        ?>
+?>
                             </select>
                         </div>
                     </td>                                
@@ -50,7 +50,32 @@
                 <tr>
                     <th>폐기부품</th>
                     <td>
-                        <div id="select_part_list"></div>
+                        <div id="select_part_list">
+<?
+                        if($assignPartList) {
+                            foreach($assignPartList as $ap_row) {
+                                $partHtml='<div id="_id_part_'.$ap_row['pt_pid'].'">';
+                                $partHtml.='    <div class="fw6">'.$ap_row['aa_part_name'].'</div>';
+                                $partHtml.='    <div>';
+                                $partHtml.='        수량: <select name="part[qty]['.$ap_row['pt_pid'].']" class="part_qty_list wAuto" onchange="calcPartPay()">';
+                                for($i=1; $i<=10; $i++) $partHtml.='<option value="'.$i.'" '.($i==$ap_row['aa_qty']?'selected':'').'>'.$i.'</option>';
+                                $partHtml.='        </select>';
+                                $partHtml.='        창고: <select name="part[store]['.$ap_row['pt_pid'].']" class="part_store_list wAuto">';
+                                foreach($setting['code']['Storage'] as $info) $partHtml.='<option value="'.$info['cd_pid'].'">'.$info['cd_name'].'</option>';
+                                $partHtml.='        </select>';
+                                $partHtml.='        사유: <select name="part[reason]['.$ap_row['pt_pid'].']" class="part_reason_list wAuto">';
+                                foreach($fix_codes->disposalReasonCode as $k=>$v) $partHtml.='<option value="'.$k.'">'.$v.'</option>';
+                                $partHtml.='        </select>';
+                                $partHtml.='        <button type="button" class="bt_pd bt_black" onclick="delPart(\''.$ap_row['pt_pid'].'\')">X</button>';
+                                $partHtml.='    </div>';
+                                $partHtml.='    <input type="hidden" class="part_id_list" value="'.$ap_row['pt_pid'].'">';
+                                $partHtml.='    <input type="hidden" class="part_name_list" name="part[name]['.$ap_row['pt_pid'].']" value="'.$ap_row['aa_part_name'].'">';
+                                $partHtml.='</div>';
+                                echo $partHtml;
+                            }
+                        }
+?>                            
+                        </div>
                     </td>                                
                 </tr>
                 <tr>

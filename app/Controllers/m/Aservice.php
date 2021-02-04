@@ -234,6 +234,9 @@ class Aservice extends \App\Controllers\BaseController
             $viewParams['use_result_code']=$use_result_code;
 
             $viewParams['productRows']=$this->product_model->findAll();
+
+            // AS기사 부품재고
+            $viewParams['userStockParts']=$this->pcmanage_model->userStockPartList(array('mn_pid'=>$this->session->get('as_mn_pid')));
             
             $viewParams['setting']=$this->setting;
             $viewParams['fix_codes']=$this->fix_codes;

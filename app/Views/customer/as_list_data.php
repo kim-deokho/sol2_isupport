@@ -2,7 +2,7 @@
     <thead>
         <tr>
             <th class="mWt50">No.</th>
-            <th>선택</th>
+            <th><label class="chkWrap"><input type="checkbox" class="allCheck" data-check="chk_pid"><i></i></label></th>
             <th>요청일</th>
             <th>접수번호</th>
             <th>상담자</th>
@@ -18,7 +18,7 @@
             <th>AS처리</th>
             <th>완료일</th>
             <th class="mWt300">상담내용</th>
-            <th class="mWt300">취소/미처리 사유</th>
+            <th class="mWt300">취소 및 처리 사유</th>
             <th class="mWt250">상품</th>
             <th>부위</th>
             <th>증상</th>
@@ -30,13 +30,13 @@
         foreach($rows as $row) {
             echo '<tr>';
             echo '  <td>'.$num--.'</td>';
-            echo '  <td><label class="chkWrap"><input type="checkbox" name="pid" value="'.$row['aa_pid'].'"><i></i></label></td>';
+            echo '  <td>'.($row['aa_state']<41?'<label class="chkWrap"><input type="checkbox" name="pid" value="'.$row['aa_pid'].'" class="chk_pid"><i></i></label>':'').'</td>';
             echo '  <td>'.dateFormat('Y-m-d', $row['request_date']).'</td>';
             echo '  <td>'.$row['ma_code'].'</td>';
             echo '  <td>'.$row['cs_manager_name'].'</td>';
             echo '  <td>'.$row['ma_cut_name'].'</td>';
             echo '  <td>'.$row['ma_cut_tel'].'</td>';
-            echo '  <td>구매처</td>';
+            echo '  <td>'.($row['ord_buy']?$row['ord_buy']:$row['ma_order_memo']).'</td>';
             echo '  <td>'.$setting['code']['AsKind'][$row['ma_kind']]['cd_name'].'</td>';
             echo '  <td>'.$row['ma_is_hurryup'].'</td>';
 
@@ -47,7 +47,7 @@
             echo '  <td><button type="button" class="small bt_sblue" onclick="as_view(\''.$row['ma_pid'].'\');">보기</button></td>';
             echo '  <td>'.dateFormat('Y-m-d', $row['aa_result_date']).'</td>';
             echo '  <td class="txal">'.$row['mc_contents'].'</td>';
-            echo '  <td class="txal">취소/미처리 사유</td>';
+            echo '  <td class="txal">'.$row['aa_result_reason'].'</td>';
             echo '  <td class="txal">'.$row['product_name'].'</td>';
             echo '  <td>'.$setting['code']['AsPart'][$row['ma_part']]['cd_name'].'</td>';
             echo '  <td>'.$setting['code']['AsSymptom'][$row['ma_symptom']]['cd_name'].'</td>';
@@ -57,3 +57,10 @@
 ?>
     </tbody>
 </table>
+<script>
+    $('.allCheck').on('click', function(){
+        var target_chk=$(this).attr('data-check');
+        if($(this).prop('checked')) $('.'+target_chk).prop('checked', true);
+        else $('.'+target_chk).prop('checked', false);
+    });
+</script>

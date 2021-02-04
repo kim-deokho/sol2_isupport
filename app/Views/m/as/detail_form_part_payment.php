@@ -150,7 +150,7 @@
                         <div class="signature-pad--actions">
                             <div>
                                 <button type="button" class="bt_100_32 bt_blue sign_set" data-action="clear">지우기</button>
-                                <button type="button" class="bt_100_32 bt_dark sign_set" data-action="save-png">저장</button>
+                                <button type="button" class="bt_100_32 bt_dark sign_set" data-action="save-png">서명저장</button>
                                 <button type="button" class="bt_100_32 bt_gray sign_img" onclick="signCancel()">서명취소</button>
                             </div>                            
                         </div>
@@ -193,6 +193,7 @@
 cateCtr.categorysJS = <?=json_encode($partCategorysJS)?>;
 cateCtr.itemJS = <?=json_encode($partRows)?>;
 cateCtr.item_selector='select_part';
+var userStockParts = <?=json_encode($userStockParts)?>;
 $(function() {
     $('#file_multi').MultiFile({
         onFileChange: function(){
@@ -238,7 +239,7 @@ function saveSign(sign) {
         cache: false,
         dataType:'html',
         success: function(res) {
-            if(res=='ok' && sign) alertBox('저장되었습니다.');
+            if(res=='ok' && sign) alertBox('서명이 저장되었습니다.');
         }
         ,error: function() {
             alertBox('Error');
@@ -269,12 +270,14 @@ function setPart(val) {
     let pt_price = exp_val[2];
     let pt_wages = exp_val[3];
 
+    let own_cnt = userStockParts ? (userStockParts[pt_pid]['stock_cnt'] ? userStockParts[pt_pid]['stock_cnt'] : 0) : 10;
+
     let partHtml='<div id="_id_part_'+pt_pid+'">';
     partHtml+='    <div>'+pt_name+'</div>';
     partHtml+='    <div>';
     partHtml+='        ('+inputNumberWithComma(pt_price)+' / '+inputNumberWithComma(pt_wages)+')';
     partHtml+='        <select name="part[qty]['+pt_pid+']" class="part_qty_list mWt50" onchange="calcPartPay()">';
-    for(var i=1; i<=10; i++) partHtml+='<option value="'+i+'">'+i+'</option>';
+    for(var i=1; i<=own_cnt; i++) partHtml+='<option value="'+i+'">'+i+'</option>';
     partHtml+='        </select>';
     partHtml+='        <button type="button" class="bt_pd bt_black" onclick="delPart(\''+pt_pid+'\')">X</button>';
     partHtml+='    </div>';
@@ -328,6 +331,11 @@ function calcPartPay() {
     });
     // console.log(calc_out_price, calc_wages_price, travel_price);
     let total_price = parseFloat(calc_out_price) + parseFloat(calc_wages_price) + parseFloat(travel_price);
+    if($('#aa_pay_kind').val()=='F') {
+        // calc_out_price=0;
+        // calc_wages_price=0;
+        total_price=0;
+    }
     $('#calc_out_price').html(inputNumberWithComma(calc_out_price));
     $('#calc_wages_price').html(inputNumberWithComma(calc_wages_price));
     $('#aa_total_price').val(inputNumberWithComma(total_price));
@@ -342,6 +350,7 @@ function setFile() {
 function chgPayKind(val) {
     if(val=='F') $('#aa_free_year').removeClass('hidden');
     else $('#aa_free_year').addClass('hidden');
+    calcPartPay();
 }
 function chgPayType(val) {
     $('.pay_type_sub').addClass('hidden');

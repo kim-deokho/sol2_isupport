@@ -153,6 +153,13 @@ class Delivery extends BaseController
     }
 
     function as_manage_excel() {
+        //AS구분
+        if(!$this->setting['code']['AsKind']) $this->setting['code']['AsKind']=$this->common_model->getCodeData(array('p_cd_code'=>'0314', 'returnType'=>'pid'));
+        //AS부위
+        if(!$this->setting['code']['AsPart']) $this->setting['code']['AsPart']=$this->common_model->getCodeData(array('p_cd_code'=>'0312', 'returnType'=>'pid'));
+        //AS증상
+        if(!$this->setting['code']['AsSymptom']) $this->setting['code']['AsSymptom']=$this->common_model->getCodeData(array('p_cd_code'=>'0313', 'returnType'=>'pid'));
+
         $this->Params['rcnt']=$this->paging_rcnt;
         if(!$this->Params['date_type']) $this->Params['date_type']='request_date';
         if(!$this->Params['sdate']) $this->Params['sdate']=date('Y').'-01-01';
@@ -169,7 +176,7 @@ class Delivery extends BaseController
             $datas[$i]['cs_manager_name']=$row['cs_manager_name'];
             $datas[$i]['ma_cut_name']=$row['ma_cut_name'];
             $datas[$i]['ma_cut_tel']=$row['ma_cut_tel'];
-            $datas[$i]['buy_com']='구매처';
+            $datas[$i]['buy_com']=$row['ord_buy']?$row['ord_buy']:$row['ma_order_memo'];
 
             $datas[$i]['ma_kind']=$this->setting['code']['AsKind'][$row['ma_kind']]['cd_name'];
             $datas[$i]['ma_is_hurryup']=$row['ma_is_hurryup'];
@@ -177,7 +184,7 @@ class Delivery extends BaseController
             $datas[$i]['aa_result_state']=$this->fix_codes->AsResultState[$row['aa_result_state']];
             $datas[$i]['as_manager_name']=$row['as_manager_name'];
             $datas[$i]['visit_date']=($row['aa_visit_date']?$row['aa_visit_date'].' '.$row['aa_visit_time']:'');
-            $datas[$i]['aa_result_date']=dateFormat('Y-m-d', $row['aa_result_date']);
+            $datas[$i]['aa_result_date']=$row['aa_result_date']?dateFormat('Y-m-d', $row['aa_result_date']):'';
             $datas[$i]['mc_contents']=$row['mc_contents'];
             $datas[$i]['product_name']=$row['product_name'];
             $datas[$i]['ma_part']=$this->setting['code']['AsPart'][$row['ma_part']]['cd_name'];
@@ -423,7 +430,7 @@ class Delivery extends BaseController
         $dataParams['aa_acount_num']=null;
         if($dataParams['aa_payment_kind']=='C') {   // 카드결제
             $dataParams['aa_payment_name']=$dataParams['card_name'];
-            $dataParams['aa_acount_num']=$dataParams['aa_acount_num'];
+            $dataParams['aa_acount_num']=$this->Params['aa_acount_num'];
         }
         else if($dataParams['aa_payment_kind']=='B') {   // 무통장
             $dataParams['aa_payment_name']=$dataParams['bank_name'];

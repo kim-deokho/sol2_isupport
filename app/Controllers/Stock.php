@@ -639,6 +639,7 @@ debug($stock);
 			$RegData['up_id'] = $this->session->get('ss_mn_pid');
 			$RegData['pi_state'] = 'B';
 			$RegData['pi_confirm_date'] = date('Y-m-d H:i:s');
+			$RegData['pi_confirm_mn_pid'] = $this->session->get('ss_mn_pid');
 			$insert_id=$this->stock_part_request_model->update($this->Params['pi_pid'],$RegData);
 			$pi_pid = $insert_id;
 			$options["searchNdate"] = date("Y-m-d");
