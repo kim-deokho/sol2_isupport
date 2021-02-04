@@ -144,7 +144,7 @@
                 <div id="signature-pad" class="signature-pad">
                     <div class="signature-pad--body">
                         <canvas class="sign_set"></canvas>
-                        <div style="background:url('<?=$row['aa_confirm_sign']?>') no-repeat center;background-size:contain;width:100%;height:90px;" class="sign_img"></div>
+                        <div id="sign_img_box" style="background:url('<?=$row['aa_confirm_sign']?>') no-repeat center;background-size:contain;width:100%;height:90px;" class="sign_img"></div>
                     </div>
                     <div class="signature-pad--footer">
                         <div class="signature-pad--actions">
@@ -227,7 +227,8 @@ function signCancel() {
     saveSign();
     $('.sign_set').removeClass('hidden');
     $('.sign_img').addClass('hidden');
-    $('img.sign_img').remove();
+    $('canvas.sign_set').css({"width":"100%", "height":"90px"});
+    // $('img.sign_img').remove();
 }
 
 function saveSign(sign) {
@@ -239,7 +240,14 @@ function saveSign(sign) {
         cache: false,
         dataType:'html',
         success: function(res) {
-            if(res=='ok' && sign) alertBox('서명이 저장되었습니다.');
+            if(res=='ok' && sign) {
+                alertBox('서명이 저장되었습니다.');
+                $('#sign_img_box').css({"background":"url("+sign+") no-repeat center", "background-size":"contain", "width":"100%", "height":"90px"});
+                $('.sign_set').addClass('hidden');
+                $('.sign_img').removeClass('hidden');
+                signaturePad.clear();
+                
+            }
         }
         ,error: function() {
             alertBox('Error');

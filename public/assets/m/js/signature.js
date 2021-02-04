@@ -47,7 +47,8 @@ function fixSizeCanvas(width, height) {
 
 // On mobile devices it might make more sense to listen to orientation change,
 // rather than window resize events.
-window.onresize = resizeCanvas;
+/* 리사이즈 할때 마다 사인패드를 초기화하면 모바일에서 input/selectboxt선택시 리사이즈되어 초기화됨. 
+window.onresize = resizeCanvas; */
 resizeCanvas();
 
 function download(dataURL, filename) {
